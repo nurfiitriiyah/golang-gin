@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"../structs"
@@ -67,6 +68,7 @@ func (idb *InDB) CreatePerson(c *gin.Context) {
 	result = gin.H{
 		"result": person,
 	}
+	fmt.Println(result)
 	c.JSON(http.StatusOK, result)
 }
 

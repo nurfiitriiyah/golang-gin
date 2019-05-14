@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
 	"./config"
 	"./controllers"
+	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"net/http"
 )
 
 type Credential struct {
@@ -28,6 +27,7 @@ func main() {
 	router.POST("/person", auth, inDB.CreatePerson)
 	router.PUT("/person", auth, inDB.UpdatePerson)
 	router.DELETE("/person/:id", auth, inDB.DeletePerson)
+
 	router.Run(":3000")
 }
 
