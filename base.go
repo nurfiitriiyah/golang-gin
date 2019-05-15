@@ -4,10 +4,11 @@ import (
 	"./config"
 	"./controllers"
 	"fmt"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
+	"strings"
 )
 
 type Credential struct {
@@ -21,71 +22,42 @@ func main() {
 
 	router := gin.Default()
 
-	router.POST("/login", loginHandler)
+	router.POST("/login", inDB.CheckLogin)
 	router.GET("/person/:id", auth, inDB.GetPerson)
 	router.GET("/persons", auth, inDB.GetPersons)
+	router.GET("/checkAuth", auth)
 	router.POST("/person", auth, inDB.CreatePerson)
 	router.PUT("/person", auth, inDB.UpdatePerson)
 	router.DELETE("/person/:id", auth, inDB.DeletePerson)
 
-	router.Run(":3000")
-}
-
-func loginHandler(c *gin.Context) {
-	var user Credential
-	err := c.Bind(&user)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "can't bind struct",
-		})
-	}
-	if user.Username != "myname" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  http.StatusUnauthorized,
-			"message": "wrong username or password",
-		})
-	} else {
-		if user.Password != "myname123" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  http.StatusUnauthorized,
-				"message": "wrong username or password",
-			})
-		}
-	}
-	fmt.Println(user)
-	sign := jwt.New(jwt.GetSigningMethod("HS256"))
-	token, err := sign.SignedString([]byte("secret"))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-		})
-		c.Abort()
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-	})
+	router.Run(":10005")
 }
 
 func auth(c *gin.Context) {
-	tokenString := c.Request.Header.Get("Authorization")
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if jwt.GetSigningMethod("HS256") != token.Method {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	authorizationHeader := c.Request.Header.Get("Authorization")
+	if authorizationHeader != "" {
+		bearerToken := strings.Split(authorizationHeader, " ")
+		fmt.Println("---------------------------CHECK AUTH--------------------------------")
+		token, err := parseBearerToken(bearerToken[0])
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusUnauthorized, err.Error())
+			c.Abort()
+		} else {
+			decoded := token.Claims
+			c.JSON(http.StatusOK, decoded)
 		}
 
+	}
+}
+
+func parseBearerToken(bearerToken string) (*jwt.Token, error) {
+	return jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			fmt.Println("error")
+			return nil, fmt.Errorf("There was an error")
+		}
 		return []byte("secret"), nil
 	})
 
-	// if token.Valid && err == nil {
-	if token != nil && err == nil {
-		fmt.Println("token verified")
-	} else {
-		result := gin.H{
-			"message": "not authorized",
-			"error":   err.Error(),
-		}
-		c.JSON(http.StatusUnauthorized, result)
-		c.Abort()
-	}
 }

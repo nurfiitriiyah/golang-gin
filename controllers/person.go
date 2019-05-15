@@ -1,11 +1,10 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
-
 	"../structs"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // to get one data with {id}
