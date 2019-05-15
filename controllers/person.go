@@ -55,7 +55,6 @@ func (idb *InDB) GetPersons(c *gin.Context) {
 
 // create new data to the database
 func (idb *InDB) CreatePerson(c *gin.Context) {
-	fmt.Println("aaaaaaaaaaaaaaa")
 	token, err := parseBearerToken(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		fmt.Println(err)

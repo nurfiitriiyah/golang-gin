@@ -1,21 +1,21 @@
 package controllers
 
 import (
+	"../structs"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type Credential struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 // to get one data with {id}
 func (idb *InDB) CheckLogin(c *gin.Context) {
+
+	fmt.Println("------------------------------------CHECK LOGIN DB---------------------------------------------")
+	//db.First(&user, 10)
+
 	fmt.Println("------------------------------------CHECK LOGIN---------------------------------------------")
-	var user Credential
+	var user structs.Credential
 	err := c.Bind(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
