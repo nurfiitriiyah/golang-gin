@@ -1,37 +1,12 @@
-package main
+package controllers
 
 import (
-	"./config"
-	"./controllers"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 	"net/http"
 	"strings"
 )
-
-type Credential struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func main() {
-	db := config.DBInit()
-	inDB := &controllers.InDB{DB: db}
-
-	router := gin.Default()
-
-	router.POST("/login", inDB.CheckLogin)
-	router.GET("/person/:id", auth, inDB.GetPerson)
-	router.GET("/persons", auth, inDB.GetPersons)
-	router.GET("/checkAuth", auth)
-	router.POST("/person", inDB.CreatePerson)
-	router.PUT("/person", auth, inDB.UpdatePerson)
-	router.DELETE("/person/:id", auth, inDB.DeletePerson)
-
-	router.Run(":10005")
-}
 
 func auth(c *gin.Context) {
 	authorizationHeader := c.Request.Header.Get("Authorization")
@@ -52,12 +27,12 @@ func auth(c *gin.Context) {
 }
 
 func parseBearerToken(bearerToken string) (*jwt.Token, error) {
-	return jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
+	bearersToken := strings.Split(bearerToken, " ")
+	return jwt.Parse(bearersToken[0], func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			fmt.Println("error")
 			return nil, fmt.Errorf("There was an error")
 		}
 		return []byte("secret"), nil
 	})
-
 }

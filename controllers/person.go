@@ -55,20 +55,30 @@ func (idb *InDB) GetPersons(c *gin.Context) {
 
 // create new data to the database
 func (idb *InDB) CreatePerson(c *gin.Context) {
-	var (
-		person structs.Person
-		result gin.H
-	)
-	first_name := c.PostForm("first_name")
-	last_name := c.PostForm("last_name")
-	person.First_Name = first_name
-	person.Last_Name = last_name
-	idb.DB.Create(&person)
-	result = gin.H{
-		"result": person,
+	fmt.Println("aaaaaaaaaaaaaaa")
+	token, err := parseBearerToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, err.Error())
+		c.Abort()
+	} else {
+		decoded := token.Claims
+		fmt.Println(decoded)
+		var (
+			person structs.Person
+			result gin.H
+		)
+		first_name := c.PostForm("first_name")
+		last_name := c.PostForm("last_name")
+		person.First_Name = first_name
+		person.Last_Name = last_name
+		idb.DB.Create(&person)
+		result = gin.H{
+			"result": person,
+		}
+		fmt.Println(result)
+		c.JSON(http.StatusOK, result)
 	}
-	fmt.Println(result)
-	c.JSON(http.StatusOK, result)
 }
 
 // update data with {id} as query
