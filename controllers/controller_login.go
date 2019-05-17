@@ -34,12 +34,7 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 				"message": "wrong username or password",
 			})
 		} else {
-			//var APPLICATION_NAME = "My Simple JWT App"
 			var LOGIN_EXPIRATION_DURATION = time.Duration(1) * time.Minute
-			//claimMaps := jwt.StandardClaims{
-			//	Issuer:    APPLICATION_NAME,
-			//	ExpiresAt: time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
-			//}
 			claimMap := jwt.MapClaims{
 				"exp":      time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
 				"iat":      time.Now().Unix(),
