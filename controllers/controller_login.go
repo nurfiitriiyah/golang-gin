@@ -18,19 +18,23 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 		})
 		c.Abort()
 	} else {
-		var (
-			UserLogin []structs.TbUserLogins
-		)
-		idb.DB.Where(map[string]interface{}{"user_uname": user.Username, "user_password": user.Password}).Find(&UserLogin)
+		var PrepUserLogin structs.TbUserLogins
+		var UserLogin []structs.TbUserLogins
+
+		idb.DB.Where(structs.TbUserLogins{User_uname: user.Username, User_password: user.Password}).First(&UserLogin).Scan(&PrepUserLogin)
+
 		if len(UserLogin) <= 0 {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"status":  http.StatusUnauthorized,
 				"message": "wrong username or password",
 			})
 		} else {
+
 			token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"username": user.Username,
-				"password": user.Password,
+				"id":       PrepUserLogin.User_id,
+				"name":     PrepUserLogin.User_name,
+				"plan":     PrepUserLogin.User_plan,
+				"username": PrepUserLogin.User_uname,
 			})
 			tokenString, err := token.SignedString([]byte("secret"))
 			if err != nil {
@@ -45,32 +49,6 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 			}
 
 		}
-		//result = gin.H{
-		//	"result": UserLogin,
-		//}
-		//
-
-		//if user.Username != "myname" || user.Password != "myname123" {
-		//	c.JSON(http.StatusUnauthorized, gin.H{
-		//		"status":  http.StatusUnauthorized,
-		//		"message": "wrong username or password",
-		//	})
-		//	c.Abort()
-		//
-		//} else {
-
-		//	if err != nil {
-		//		c.JSON(http.StatusInternalServerError, gin.H{
-		//			"message": err.Error(),
-		//		})
-		//		c.Abort()
-		//	}else {
-		//		c.JSON(http.StatusOK, gin.H{
-		//			"token": tokenString,
-		//		})
-		//	}
-		//}
-
 	}
 
 }
