@@ -5,6 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 // to get one data with {id}
@@ -33,13 +34,21 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 				"message": "wrong username or password",
 			})
 		} else {
-
-			token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			//var APPLICATION_NAME = "My Simple JWT App"
+			var LOGIN_EXPIRATION_DURATION = time.Duration(1) * time.Minute
+			//claimMaps := jwt.StandardClaims{
+			//	Issuer:    APPLICATION_NAME,
+			//	ExpiresAt: time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
+			//}
+			claimMap := jwt.MapClaims{
+				"exp":      time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
+				"iat":      time.Now().Unix(),
 				"id":       PrepUserLogin.User_id,
 				"name":     PrepUserLogin.User_name,
 				"plan":     PrepUserLogin.User_plan,
 				"username": PrepUserLogin.User_uname,
-			})
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimMap)
 			tokenString, err := token.SignedString([]byte("secret"))
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{

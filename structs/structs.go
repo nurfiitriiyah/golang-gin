@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"time"
 )
@@ -15,8 +16,13 @@ type Person struct {
 }
 
 type Credential struct {
+	jwt.StandardClaims
 	Username string `json:"username"`
 	Password string `json:"password"`
+	id       string `json:"password"`
+	name     string `json:"password"`
+	plan     string `json:"password"`
+	username string `json:"password"`
 }
 
 /**
