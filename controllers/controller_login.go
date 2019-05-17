@@ -9,7 +9,15 @@ import (
 
 // to get one data with {id}
 func (idb *InDB) CheckLogin(c *gin.Context) {
+	/*
+		Declare variable, that will be used in this function
+			var user contain struct of credential used for login
+			var prepUserLogin contain struct of field in table tb_user_logins
+			var UserLogin contain struct of field in table tb_user_logins and declared as array, for using len
+	*/
 	var user structs.Credential
+	var PrepUserLogin structs.TbUserLogins
+	var UserLogin []structs.TbUserLogins
 	err := c.Bind(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -18,11 +26,7 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 		})
 		c.Abort()
 	} else {
-		var PrepUserLogin structs.TbUserLogins
-		var UserLogin []structs.TbUserLogins
-
 		idb.DB.Where(structs.TbUserLogins{User_uname: user.Username, User_password: user.Password}).First(&UserLogin).Scan(&PrepUserLogin)
-
 		if len(UserLogin) <= 0 {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"status":  http.StatusUnauthorized,
