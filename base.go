@@ -23,6 +23,8 @@ func main() {
 	router := gin.Default()
 
 	router.POST("/login", inDB.CheckLogin)
+	router.GET("/ots", inDB.GetOTS)
+
 	router.GET("/person/:id", auth, inDB.GetPerson)
 	router.GET("/persons", auth, inDB.GetPersons)
 	router.GET("/checkAuth", auth)

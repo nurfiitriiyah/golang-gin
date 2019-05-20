@@ -34,7 +34,7 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 				"message": "wrong username or password",
 			})
 		} else {
-			var LOGIN_EXPIRATION_DURATION = time.Duration(1) * time.Minute
+			var LOGIN_EXPIRATION_DURATION = time.Duration(8) * time.Hour
 			claimMap := jwt.MapClaims{
 				"exp":      time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
 				"iat":      time.Now().Unix(),
@@ -55,8 +55,6 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 					"token": tokenString,
 				})
 			}
-
 		}
 	}
-
 }

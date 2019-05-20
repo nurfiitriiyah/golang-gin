@@ -19,10 +19,6 @@ type Credential struct {
 	jwt.StandardClaims
 	Username string `json:"username"`
 	Password string `json:"password"`
-	id       string `json:"password"`
-	name     string `json:"password"`
-	plan     string `json:"password"`
-	username string `json:"password"`
 }
 
 /**
@@ -40,4 +36,40 @@ type TbUserLogins struct {
 	Created_by    string
 	Updated_at    time.Time
 	Updated_by    string
+}
+
+type TbOutstanding struct {
+	Outstanding_transporter string
+	Outstanding_jategori    string
+	Outstanding_dispatcher  string
+	Outstanding_area        string
+	Outstanding_quantity    int
+	Outstanding_update      time.Time
+	Outstanding_location    string
+	Outstanding_late        int
+	Outstanding_package     string
+	Outstanding_retail      int
+}
+
+type TbDelivery struct {
+	Delivery_Date        time.Time
+	Delivery_Transporter string
+	Delivery_Dispatcher  string
+	Delivery_Area        string
+	Delivery_Quantity    int
+	Delivery_SalesType   string
+	Delivery_Update      time.Time
+	Delivery_Location    string
+	Delivery_Retail      string
+	Delivery_Late        int
+	Delivery_Package     string
+	Delivery_Zona        string
+	Delivery_Dest        string
+}
+
+type TbLog struct {
+	Log_Id     string
+	Log_Detail string
+	Log_Resp   string
+	Created_at time.Time
 }
