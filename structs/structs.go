@@ -40,7 +40,7 @@ type TbUserLogins struct {
 
 type TbOutstanding struct {
 	Outstanding_transporter string
-	Outstanding_jategori    string
+	Outstanding_kategori    string
 	Outstanding_dispatcher  string
 	Outstanding_area        string
 	Outstanding_quantity    int
