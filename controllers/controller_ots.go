@@ -12,11 +12,14 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	var wg sync.WaitGroup
 	/*Get OTS*/
 	var (
-		Ots    structs.TbOutstanding
-		result gin.H
+		Ots       structs.TbOutstanding
+		result    gin.H
+		labelArea []string
+		TotalArea []int
+
+		labelDisp []string
+		TotalDisp []int
 	)
-	areaOts := make(map[string][]interface{})
-	dispOts := make(map[string][]interface{})
 
 	rows, err := idb.DB.Table("tb_outstandings").Select("outstanding_area,sum(outstanding_quantity)").Group("outstanding_area").Rows()
 	disp, err := idb.DB.Table("tb_outstandings").Select("outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher").Rows()
@@ -33,21 +36,25 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 					c.JSON(http.StatusInternalServerError, err)
 					c.Abort()
 				} else {
-					dispOts[Ots.Outstanding_dispatcher] = append(areaOts[Ots.Outstanding_dispatcher], Ots.Outstanding_quantity)
+					labelDisp = append(labelDisp, Ots.Outstanding_dispatcher)
+					TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
 				}
 			}
 			defer wg.Done()
 		}()
 
 		go func() {
+			var i = 0
 			for rows.Next() {
 				err := rows.Scan(&Ots.Outstanding_area, &Ots.Outstanding_quantity)
 				if err != nil {
 					c.JSON(http.StatusInternalServerError, err)
 					c.Abort()
 				} else {
-					areaOts[Ots.Outstanding_area] = append(areaOts[Ots.Outstanding_area], Ots.Outstanding_quantity)
+					labelArea = append(labelArea, Ots.Outstanding_area)
+					TotalArea = append(TotalArea, Ots.Outstanding_quantity)
 				}
+				i++
 			}
 			defer wg.Done()
 		}()
@@ -55,8 +62,14 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	}
 	wg.Wait()
 	result = gin.H{
-		"area": areaOts,
-		"disp": dispOts,
+		"disp": gin.H{
+			"label": labelDisp,
+			"total": TotalDisp,
+		},
+		"area": gin.H{
+			"label": labelArea,
+			"total": TotalArea,
+		},
 	}
 
 	c.JSON(http.StatusOK, result)
