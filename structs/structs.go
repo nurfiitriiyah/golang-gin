@@ -73,3 +73,8 @@ type TbLog struct {
 	Log_Resp   string
 	Created_at time.Time
 }
+
+type TbRetail struct {
+	Retail_ID    int
+	Retail_label string
+}
