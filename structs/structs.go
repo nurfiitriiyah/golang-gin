@@ -78,3 +78,7 @@ type TbRetail struct {
 	Retail_ID    int
 	Retail_label string
 }
+
+type DetailData struct {
+	Data string `json:"data"`
+}

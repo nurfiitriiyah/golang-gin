@@ -24,6 +24,7 @@ func main() {
 
 	router.POST("/login", inDB.CheckLogin)
 	router.GET("/ots", inDB.GetOTS)
+	router.POST("/detail/ots", inDB.GetDetailOTS)
 
 	router.GET("/person/:id", auth, inDB.GetPerson)
 	router.GET("/persons", auth, inDB.GetPersons)
