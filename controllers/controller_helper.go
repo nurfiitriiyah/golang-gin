@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 )
 
 func auth(c *gin.Context) {
@@ -35,4 +36,8 @@ func parseBearerToken(bearerToken string) (*jwt.Token, error) {
 		}
 		return []byte("secret"), nil
 	})
+}
+func trimFirstRune(s string) string {
+	_, i := utf8.DecodeRuneInString(s)
+	return s[i:]
 }

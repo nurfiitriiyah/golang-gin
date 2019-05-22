@@ -5,6 +5,7 @@ import (
 	"./controllers"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
@@ -17,11 +18,12 @@ type Credential struct {
 }
 
 func main() {
-	db := config.DBInit()
-	inDB := &controllers.InDB{DB: db}
 
 	router := gin.Default()
+	router.Use(cors.Default())
 
+	db := config.DBInit()
+	inDB := &controllers.InDB{DB: db}
 	router.POST("/login", inDB.CheckLogin)
 	router.GET("/ots", inDB.GetOTS)
 	router.POST("/detail/ots", inDB.GetDetailOTS)

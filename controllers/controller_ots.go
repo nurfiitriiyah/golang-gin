@@ -259,11 +259,15 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		c.Abort()
 	}
 	nums := createParams.Data
+	disp := idb.DB.Table("tb_outstandings").Select("outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher")
+
 	for _, num := range nums {
 		subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
+		value := trimFirstRune(num)
+
 		switch subStrn {
 		case "1":
-			fmt.Println("Dispatch")
+			disp = disp.Select("outstanding_location,sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher = ?", value)
 		case "2":
 			fmt.Println("Area")
 		case "3":
@@ -277,4 +281,62 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 	}
 
+	var (
+		Ots    structs.TbOutstanding
+		result gin.H
+
+		//labelArea []string
+		//TotalArea []int
+
+		labelDisp []string
+		TotalDisp []int
+
+		//labelPack []string
+		//TotalPack []int
+		//
+		//labelRetl []string
+		//TotalRetl []int
+		//
+		//labelLate []int
+		//TotalLate []int
+		//
+		//labelTransport []string
+		//TotalTransport []int
+		//
+		//labelTransportOther []string
+		//TotalTransportOther []int
+	)
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		resDisp, err := disp.Rows()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err)
+			c.Abort()
+		}
+		var i = 0
+		for resDisp.Next() {
+			err := resDisp.Scan(&Ots.Outstanding_location, &Ots.Outstanding_quantity)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err)
+				c.Abort()
+			} else {
+				labelDisp = append(labelDisp, Ots.Outstanding_location)
+				TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
+			}
+			i++
+		}
+		defer wg.Done()
+	}()
+	wg.Wait()
+	result = gin.H{
+		"disp": gin.H{
+			"label": labelDisp,
+			"total": TotalDisp,
+		},
+	}
+
+	c.JSON(http.StatusOK, result)
 }
