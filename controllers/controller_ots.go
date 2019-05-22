@@ -250,12 +250,11 @@ Will show detail when pie chart is clicked
 **/
 
 func (idb *InDB) GetDetailOTS(c *gin.Context) {
-
 	var createParams structs.CreateParams
 	err := c.BindJSON(&createParams)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, err.Error())
 		c.Abort()
 	}
-	fmt.Println(createParams)
+	fmt.Println(len(createParams.Data))
 }
