@@ -5,6 +5,7 @@ import (
 	"gin/structs"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"regexp"
 	"sync"
 )
 
@@ -20,8 +21,6 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	} else {
 		decoded := token.Claims
 		fmt.Println(decoded)
-
-		var wg sync.WaitGroup
 
 		var (
 			Ots    structs.TbOutstanding
@@ -49,6 +48,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 			labelTransportOther []string
 			TotalTransportOther []int
 		)
+
+		var wg sync.WaitGroup
 
 		wg.Add(6)
 
@@ -251,10 +252,32 @@ Will show detail when pie chart is clicked
 
 func (idb *InDB) GetDetailOTS(c *gin.Context) {
 	var createParams structs.CreateParams
+	re := regexp.MustCompile("[0-9]+")
+
 	err := c.BindJSON(&createParams)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, err.Error())
 		c.Abort()
 	}
-	fmt.Println(len(createParams.Data))
+	nums := createParams.Data
+	for _, num := range nums {
+		subStrn := (re.FindAllString(num, -1))[0]
+		switch subStrn {
+		case "1":
+			fmt.Println("Dispatch")
+		case "2":
+			fmt.Println("Area")
+		case "3":
+			fmt.Println("Late")
+		case "4":
+			fmt.Println("Transport")
+		case "5":
+			fmt.Println("Pack")
+		case "6":
+			fmt.Println("Retail")
+		case "10":
+			fmt.Println("Delete")
+		}
+	}
+
 }
