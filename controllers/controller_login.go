@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -51,8 +52,10 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 					"plan":     PrepUserLogin.User_plan,
 					"username": PrepUserLogin.User_uname,
 				}
+				secret := os.Getenv("JWT_SECRET_KEY")
+
 				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimMap)
-				tokenString, err := token.SignedString([]byte("secret"))
+				tokenString, err := token.SignedString([]byte(secret))
 				if err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"message": err.Error(),

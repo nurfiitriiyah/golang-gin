@@ -8,6 +8,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -21,6 +23,10 @@ func main() {
 
 	router := gin.Default()
 	router.Use(cors.Default())
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	db := config.DBInit()
 	inDB := &controllers.InDB{DB: db}

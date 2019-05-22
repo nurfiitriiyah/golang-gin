@@ -5,6 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 	"strings"
 	"unicode/utf8"
 )
@@ -28,13 +29,14 @@ func auth(c *gin.Context) {
 }
 
 func parseBearerToken(bearerToken string) (*jwt.Token, error) {
+	secret := os.Getenv("JWT_SECRET_KEY")
 	bearersToken := strings.Split(bearerToken, " ")
 	return jwt.Parse(bearersToken[0], func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			fmt.Println("error")
 			return nil, fmt.Errorf("There was an error")
 		}
-		return []byte("secret"), nil
+		return []byte(secret), nil
 	})
 }
 func trimFirstRune(s string) string {
