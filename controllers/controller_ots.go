@@ -251,92 +251,83 @@ Will show detail when pie chart is clicked
 **/
 
 func (idb *InDB) GetDetailOTS(c *gin.Context) {
-	var createParams structs.CreateParams
-	re := regexp.MustCompile("[0-9]+")
-	errs := c.BindJSON(&createParams)
-	if errs != nil {
-		c.JSON(http.StatusUnauthorized, errs.Error())
+	token, err := parseBearerToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, err.Error())
 		c.Abort()
-	}
-	nums := createParams.Data
-	disp := idb.DB.Table("tb_outstandings").Select("outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher")
-
-	for _, num := range nums {
-		subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
-		value := trimFirstRune(num)
-
-		switch subStrn {
-		case "1":
-			disp = disp.Select("outstanding_location,sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher = ?", value)
-		case "2":
-			fmt.Println("Area")
-		case "3":
-			fmt.Println("Late")
-		case "4":
-			fmt.Println("Transport")
-		case "5":
-			fmt.Println("Pack")
-		case "6":
-			fmt.Println("Retail")
-		}
-	}
-
-	var (
-		Ots    structs.TbOutstanding
-		result gin.H
-
-		//labelArea []string
-		//TotalArea []int
-
-		labelDisp []string
-		TotalDisp []int
-
-		//labelPack []string
-		//TotalPack []int
-		//
-		//labelRetl []string
-		//TotalRetl []int
-		//
-		//labelLate []int
-		//TotalLate []int
-		//
-		//labelTransport []string
-		//TotalTransport []int
-		//
-		//labelTransportOther []string
-		//TotalTransportOther []int
-	)
-
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		resDisp, err := disp.Rows()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
+	} else {
+		fmt.Println(token)
+		var createParams structs.CreateParams
+		re := regexp.MustCompile("[0-9]+")
+		errs := c.BindJSON(&createParams)
+		if errs != nil {
+			c.JSON(http.StatusUnauthorized, errs.Error())
 			c.Abort()
 		}
-		var i = 0
-		for resDisp.Next() {
-			err := resDisp.Scan(&Ots.Outstanding_location, &Ots.Outstanding_quantity)
+		nums := createParams.Data
+		disp := idb.DB.Table("tb_outstandings").Select("outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher")
+
+		for _, num := range nums {
+			subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
+			value := trimFirstRune(num)
+
+			switch subStrn {
+			case "1":
+				disp = disp.Select("outstanding_location,sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher = ?", value)
+			case "2":
+				fmt.Println("Area")
+			case "3":
+				fmt.Println("Late")
+			case "4":
+				fmt.Println("Transport")
+			case "5":
+				fmt.Println("Pack")
+			case "6":
+				fmt.Println("Retail")
+			}
+		}
+
+		var (
+			Ots    structs.TbOutstanding
+			result gin.H
+
+			labelDisp []string
+			TotalDisp []int
+		)
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			resDisp, err := disp.Rows()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
-			} else {
-				labelDisp = append(labelDisp, Ots.Outstanding_location)
-				TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
 			}
-			i++
+			var i = 0
+			for resDisp.Next() {
+				err := resDisp.Scan(&Ots.Outstanding_location, &Ots.Outstanding_quantity)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+					c.Abort()
+				} else {
+					labelDisp = append(labelDisp, Ots.Outstanding_location)
+					TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
+				}
+				i++
+			}
+			defer wg.Done()
+		}()
+		wg.Wait()
+		result = gin.H{
+			"disp": gin.H{
+				"label": labelDisp,
+				"total": TotalDisp,
+			},
 		}
-		defer wg.Done()
-	}()
-	wg.Wait()
-	result = gin.H{
-		"disp": gin.H{
-			"label": labelDisp,
-			"total": TotalDisp,
-		},
+
+		c.JSON(http.StatusOK, result)
 	}
 
-	c.JSON(http.StatusOK, result)
 }
