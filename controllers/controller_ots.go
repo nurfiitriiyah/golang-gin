@@ -253,15 +253,14 @@ Will show detail when pie chart is clicked
 func (idb *InDB) GetDetailOTS(c *gin.Context) {
 	var createParams structs.CreateParams
 	re := regexp.MustCompile("[0-9]+")
-
-	err := c.BindJSON(&createParams)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, err.Error())
+	errs := c.BindJSON(&createParams)
+	if errs != nil {
+		c.JSON(http.StatusUnauthorized, errs.Error())
 		c.Abort()
 	}
 	nums := createParams.Data
 	for _, num := range nums {
-		subStrn := (re.FindAllString(num, -1))[0]
+		subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
 		switch subStrn {
 		case "1":
 			fmt.Println("Dispatch")
@@ -275,8 +274,6 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			fmt.Println("Pack")
 		case "6":
 			fmt.Println("Retail")
-		case "10":
-			fmt.Println("Delete")
 		}
 	}
 
