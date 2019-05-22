@@ -79,6 +79,6 @@ type TbRetail struct {
 	Retail_label string
 }
 
-type DetailData struct {
-	Data string `json:"data"`
+type CreateParams struct {
+	Data []string `json:"data"`
 }

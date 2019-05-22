@@ -248,18 +248,14 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 /**
 Will show detail when pie chart is clicked
 **/
-func (idb *InDB) GetDetailOTS(c *gin.Context) {
-	var data map[string][]structs.DetailData
-	err := c.Bind(&data)
-	if err != nil {
-		fmt.Println(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "can't bind struct",
-		})
-		c.Abort()
-	} else {
-		fmt.Println(data)
-	}
 
+func (idb *InDB) GetDetailOTS(c *gin.Context) {
+
+	var createParams structs.CreateParams
+	err := c.BindJSON(&createParams)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, err.Error())
+		c.Abort()
+	}
+	fmt.Println(createParams)
 }
