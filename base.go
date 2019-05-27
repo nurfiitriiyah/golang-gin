@@ -10,6 +10,11 @@ import (
 	"log"
 )
 
+const (
+	serverKey = "YOUR-KEY"
+	topic     = "/topics/someTopic"
+)
+
 func main() {
 
 	router := gin.Default()

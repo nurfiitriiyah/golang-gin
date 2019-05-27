@@ -275,9 +275,28 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		var (
 			Ots    structs.TbOutstanding
 			result gin.H
+			Retail structs.TbRetail
 
 			labelDisp []string
 			TotalDisp []int
+
+			labelRitl []string
+			TotalRitl []int
+
+			labelPack []string
+			TotalPack []int
+
+			labelArea []string
+			TotalArea []int
+
+			labelLate []int
+			TotalLate []int
+
+			labelTransport []string
+			TotalTransport []int
+
+			labelTransportOther []string
+			TotalTransportOther []int
 		)
 
 		re := regexp.MustCompile("[0-9]+")
@@ -323,12 +342,12 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 					trans = trans.Where("outstanding_late < ?", 1)
 					pack = pack.Where("outstanding_late < ?", 1)
 				case "7":
-					//disp = disp.Where("outstanding_late > ? and outstanding_late < ?", 5,10)
-					//retl = retl.Where("outstanding_late > ? and outstanding_late < ?", 5,10)
-					//area = area.Where("outstanding_late > ? and outstanding_late < ?", 5,10)
-					//late = late.Where("outstanding_late > ? and outstanding_late < ?", 5,10)
-					//trans = trans.Where("outstanding_late > ? and outstanding_late < ?", 5,10)
-					//pack = pack.Where("outstanding_late > ? and outstanding_late < ?", 5,10)
+					disp = disp.Where("outstanding_late BETWEEN  ? AND ?", 6, 10)
+					retl = retl.Where("outstanding_late BETWEEN  ? AND ?", 6, 10)
+					area = area.Where("outstanding_late BETWEEN  ? AND ?", 6, 10)
+					late = late.Where("outstanding_late BETWEEN  ? AND ?", 6, 10)
+					trans = trans.Where("outstanding_late BETWEEN  ? AND ?", 6, 10)
+					pack = pack.Where("outstanding_late BETWEEN  ? AND ?", 6, 10)
 				case "8":
 					disp = disp.Where("outstanding_late > ?", 10)
 					retl = retl.Where("outstanding_late > ?", 10)
@@ -372,7 +391,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 		var wg sync.WaitGroup
 
-		wg.Add(1)
+		wg.Add(6)
 		go func() {
 			resDisp, err := disp.Rows()
 			if err != nil {
@@ -393,12 +412,185 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			}
 			defer wg.Done()
 		}()
+		/**
+		  Retail
+		  **/
+		go func() {
+			resRet, err := retl.Rows()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err)
+				c.Abort()
+			}
+			var i = 0
+			for resRet.Next() {
+				err := resRet.Scan(&Retail.Retail_label, &Ots.Outstanding_quantity)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+					c.Abort()
+				} else {
+					labelRitl = append(labelRitl, Retail.Retail_label)
+					TotalRitl = append(TotalRitl, Ots.Outstanding_quantity)
+				}
+				i++
+			}
+			defer wg.Done()
+		}()
+		/**
+		  Pack
+		  **/
+		go func() {
+			resPack, err := pack.Rows()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err)
+				c.Abort()
+			}
+			var i = 0
+			for resPack.Next() {
+				err := resPack.Scan(&Ots.Outstanding_package, &Ots.Outstanding_quantity)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+					c.Abort()
+				} else {
+					labelPack = append(labelPack, Ots.Outstanding_package)
+					TotalPack = append(TotalPack, Ots.Outstanding_quantity)
+				}
+				i++
+			}
+			defer wg.Done()
+		}()
+		/**
+		  Area
+		  **/
+		go func() {
+			resArea, err := area.Rows()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err)
+				c.Abort()
+			}
+			var i = 0
+			for resArea.Next() {
+				err := resArea.Scan(&Ots.Outstanding_area, &Ots.Outstanding_quantity)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+					c.Abort()
+				} else {
+					labelArea = append(labelArea, Ots.Outstanding_area)
+					TotalArea = append(TotalArea, Ots.Outstanding_quantity)
+				}
+				i++
+			}
+			defer wg.Done()
+		}()
+		/**
+		  Late
+		  **/
+		go func() {
+
+			TotalLateM10 := 0
+			TotalLateL1 := 0
+			TotalLateB610 := 0
+			resLate, err := late.Rows()
+
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err)
+				c.Abort()
+			}
+			for resLate.Next() {
+				err := resLate.Scan(&Ots.Outstanding_late, &Ots.Outstanding_quantity)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+					c.Abort()
+				} else {
+					if Ots.Outstanding_late < 1 {
+						TotalLateL1 = TotalLateL1 + Ots.Outstanding_quantity
+					} else {
+						if Ots.Outstanding_late > 5 && Ots.Outstanding_late < 10 {
+							TotalLateB610 = TotalLateB610 + Ots.Outstanding_quantity
+						} else {
+							if Ots.Outstanding_late > 9 {
+								TotalLateM10 = TotalLateM10 + Ots.Outstanding_quantity
+							} else {
+								labelLate = append(labelLate, Ots.Outstanding_late)
+								TotalLate = append(TotalLate, Ots.Outstanding_quantity)
+							}
+						}
+					}
+
+				}
+
+			}
+
+			labelLate = append(labelLate, 6)
+			TotalLate = append(TotalLate, TotalLateL1)
+
+			labelLate = append(labelLate, 7)
+			TotalLate = append(TotalLate, TotalLateB610)
+
+			labelLate = append(labelLate, 8)
+			TotalLate = append(TotalLate, TotalLateM10)
+
+			defer wg.Done()
+		}()
+		/**
+		  Trans
+		  **/
+		go func() {
+			resTrans, err := trans.Rows()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err)
+				c.Abort()
+			}
+			var i = 0
+			for resTrans.Next() {
+				err := resTrans.Scan(&Ots.Outstanding_transporter, &Ots.Outstanding_quantity)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+					c.Abort()
+				} else {
+					if i < 10 {
+						labelTransport = append(labelTransport, Ots.Outstanding_transporter)
+						TotalTransport = append(TotalTransport, Ots.Outstanding_quantity)
+					} else {
+						labelTransportOther = append(labelTransportOther, Ots.Outstanding_transporter)
+						TotalTransportOther = append(TotalTransportOther, Ots.Outstanding_quantity)
+					}
+
+				}
+				i++
+			}
+			defer wg.Done()
+		}()
 
 		wg.Wait()
 		result = gin.H{
 			"disp": gin.H{
 				"label": labelDisp,
 				"total": TotalDisp,
+			},
+			"retail": gin.H{
+				"label": labelRitl,
+				"total": TotalRitl,
+			},
+			"pack": gin.H{
+				"label": labelPack,
+				"total": TotalPack,
+			},
+			"area": gin.H{
+				"label": labelArea,
+				"total": TotalArea,
+			},
+			"late": gin.H{
+				"label": labelLate,
+				"total": TotalLate,
+			}, "transport": gin.H{
+				"top10": gin.H{
+					"label": labelTransport,
+					"total": TotalTransport,
+				},
+				"other": gin.H{
+					"label": labelTransportOther,
+					"total": TotalTransportOther,
+				},
 			},
 		}
 
