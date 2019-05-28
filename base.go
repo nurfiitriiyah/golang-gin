@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	//"google.golang.org/api/option"
 	"log"
 )
 
@@ -26,8 +27,11 @@ func main() {
 
 	db := config.DBInit()
 	inDB := &controllers.InDB{DB: db}
-	router.POST("/login", inDB.CheckLogin)
+
 	router.GET("/ots", inDB.GetOTS)
+	router.GET("/checkFirebase", inDB.CheckFirebase)
+
+	router.POST("/login", inDB.CheckLogin)
 	router.POST("/detail/ots", inDB.GetDetailOTS)
 
 	//router.GET("/person/:id", auth, inDB.GetPerson)
