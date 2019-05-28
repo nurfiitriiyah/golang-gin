@@ -82,3 +82,8 @@ type TbRetail struct {
 type CreateParams struct {
 	Data []string `json:"data"`
 }
+
+type UserFirebase struct {
+	UserID       string `json:"user_id"`
+	Notification string `json:"notification"`
+}

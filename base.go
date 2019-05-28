@@ -29,7 +29,7 @@ func main() {
 	inDB := &controllers.InDB{DB: db}
 
 	router.GET("/ots", inDB.GetOTS)
-	router.GET("/checkFirebase", inDB.CheckFirebase)
+	router.POST("/checkFirebase", inDB.CheckFirebase)
 
 	router.POST("/login", inDB.CheckLogin)
 	router.POST("/detail/ots", inDB.GetDetailOTS)

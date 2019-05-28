@@ -4,57 +4,72 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
+	"gin/structs"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/option"
 	"log"
+	"net/http"
 	"os"
 )
 
 func (idb *InDB) CheckFirebase(c *gin.Context) {
-	fmt.Println("-------------------------------------FIREBASE----------------------------------------------")
+	/*
+		Declare variable, that will be used in this function
+			var user contain struct of credential used for login
+			var prepUserLogin contain struct of field in table tb_user_logins
+			var UserLogin contain struct of field in table tb_user_logins and declared as array, for using len
+	*/
+	var user structs.UserFirebase
 
-	ctx := context.Background()
-	conf := &firebase.Config{
-		DatabaseURL: os.Getenv("DATABASE_URL"),
-	}
-	// Fetch the service account key JSON file contents
-	opt := option.WithCredentialsFile("refreshToken.json")
-
-	// Initialize the app with a service account, granting admin privileges
-	app, err := firebase.NewApp(ctx, conf, opt)
+	err := c.Bind(&user)
 	if err != nil {
-		log.Fatalln("Error initializing app:", err)
-	}
+		fmt.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "can't bind struct",
+		})
+		c.Abort()
+	} else {
+		fmt.Println(user.UserID)
+		fmt.Println("-------------------------------------FIREBASE----------------------------------------------")
 
-	client, err := app.Database(ctx)
-	if err != nil {
-		log.Fatalln("Error initializing database client:", err)
-	}
+		ctx := context.Background()
+		conf := &firebase.Config{
+			DatabaseURL: os.Getenv("DATABASE_URL"),
+		}
+		// Fetch the service account key JSON file contents
+		opt := option.WithCredentialsFile("refreshToken.json")
 
-	//As an admin, the app has access to read and write all data, regradless of Security Rules
-	ref := client.NewRef("User")
-	var data map[string]interface{}
-	if err := ref.Get(ctx, &data); err != nil {
-		log.Fatalln("Error reading from database:", err)
-	}
+		// Initialize the app with a service account, granting admin privileges
+		app, err := firebase.NewApp(ctx, conf, opt)
+		if err != nil {
+			log.Fatalln("Error initializing app:", err)
+		}
 
-	type User struct {
-		DateOfBirth string `json:"date_of_birth,omitempty"`
-		FullName    string `json:"full_name,omitempty"`
-		Nickname    string `json:"nickname,omitempty"`
-	}
+		client, err := app.Database(ctx)
+		if err != nil {
+			log.Fatalln("Error initializing database client:", err)
+		}
 
-	a := ref.Set(ctx, map[string]*User{
-		"alanisawesome": {
-			DateOfBirth: "June 23, 1912",
-			FullName:    "Alan Turing",
-		},
-		"gracehop": {
-			DateOfBirth: "December 9, 1906",
-			FullName:    "Grace Hopper",
-		},
-	})
-	if a != nil {
-		log.Fatalln("Error setting value:", err)
+		//As an admin, the app has access to read and write all data, regradless of Security Rules
+		ref := client.NewRef("User")
+		var data map[string]interface{}
+		if err := ref.Get(ctx, &data); err != nil {
+			log.Fatalln("Error reading from database:", err)
+		}
+
+		type Post struct {
+			Author string `json:"author,omitempty"`
+			Title  string `json:"title,omitempty"`
+		}
+
+		postsRef := ref.Child(user.UserID)
+		if err := postsRef.Set(ctx, &Post{
+			Author: "gracehop",
+			Title:  "Announcing COBOL, a New Programming Language",
+		}); err != nil {
+			log.Fatalln("Error setting value:", err)
+		}
+
 	}
 }
