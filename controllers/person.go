@@ -38,18 +38,10 @@ func (idb *InDB) GetPersons(c *gin.Context) {
 	)
 
 	idb.DB.Find(&persons)
-	if len(persons) <= 0 {
-		result = gin.H{
-			"result": nil,
-			"count":  0,
-		}
-	} else {
-		result = gin.H{
-			"result": persons,
-			"count":  len(persons),
-		}
+	result = gin.H{
+		"result": persons,
+		"count":  len(persons),
 	}
-
 	c.JSON(http.StatusOK, result)
 }
 

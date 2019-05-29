@@ -30,7 +30,6 @@ func (idb *InDB) CheckFirebase(c *gin.Context) {
 		})
 		c.Abort()
 	} else {
-		fmt.Println(user.UserID)
 		fmt.Println("-------------------------------------FIREBASE----------------------------------------------")
 
 		ctx := context.Background()
@@ -59,14 +58,13 @@ func (idb *InDB) CheckFirebase(c *gin.Context) {
 		}
 
 		type Post struct {
-			Author string `json:"author,omitempty"`
-			Title  string `json:"title,omitempty"`
+			Author       string `json:"author,omitempty"`
+			Title        string `json:"title,omitempty"`
+			Notification string `json:"notification"`
 		}
-
 		postsRef := ref.Child(user.UserID)
 		if err := postsRef.Set(ctx, &Post{
-			Author: "gracehop",
-			Title:  "Announcing COBOL, a New Programming Language",
+			Notification: user.Notification,
 		}); err != nil {
 			log.Fatalln("Error setting value:", err)
 		}

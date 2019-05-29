@@ -11,11 +11,6 @@ import (
 	"log"
 )
 
-const (
-	serverKey = "YOUR-KEY"
-	topic     = "/topics/someTopic"
-)
-
 func main() {
 
 	router := gin.Default()
@@ -34,8 +29,9 @@ func main() {
 	router.POST("/login", inDB.CheckLogin)
 	router.POST("/detail/ots", inDB.GetDetailOTS)
 
+	router.GET("/persons", inDB.GetPersons)
+
 	//router.GET("/person/:id", auth, inDB.GetPerson)
-	//router.GET("/persons", auth, inDB.GetPersons)
 	//router.GET("/checkAuth", auth)
 	//router.POST("/person", inDB.CreatePerson)
 	//router.PUT("/person", auth, inDB.UpdatePerson)
