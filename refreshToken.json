@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "perfect-jetty-241600",
+  "private_key_id": "004b45d3b6ecb7510289d6dface717990da42540",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCYWcW+Yc8TnU6G\n/Yqdngx48cK53mH/J2OmtSdKlDh65JpohRkrgdOxjpir504txHxJxCw0XykqOPbN\nKJbFJeaa3WA1DEPzgeH7XdMdyoIhsGfKZdajtwyhvArfOKiYNQ2f2TfPS5ySiI60\nqBoSeu5edOhE/4/Sbk6ADx/pVVDR+h1fcdhJYEtBayrbEpVMJIFca4UlmUfD7zQC\n4CmsfFculO9+3bl878mpIl6zA+npY/wIKbOv2AtnG45GzU0EvvqpzRnMd8AnM31y\nM6JKQd6I0qMDQvehDddOg/+ekIM59r+Wv1djiHcJLljBFBzE9JHNFzBzI1uiZ4K8\nRGK/svwVAgMBAAECggEAEgsZzBs15PcNuJeZHeM8y2somo5PsWInH3SXf3HwAYAH\nGIdg7IHvAjmm878Mh4ech7kD2j0F+VHvSut6dcVwGxnKXeYCuzl/+98IFKBqCpbj\np/kpM1EH3jTQ3dCOSR6Ja0vU3AhytfkV26gIFHW6OvYiFx/kVvII+oowB5i63m9P\n2SfiaZ+SMoq1VXzMoJ68+oS212xU2hAwESN95B12rjOBiL84GB6sZwwY8WhckSqZ\niSKIKVqhIELGute0yrZiCvgQ3SEnTtCu3AI7jgQ2+gwgNNn/BGh6HU3karlniafY\nFTkSH1xUhfNc2iBb9ST/ZiJO2iCmS37DAPnh66MKwQKBgQDGd/tswR0aqUhqCKfK\n+b4ut+o3J6mml8nVIqwzmcOe+0lvLFeanrI4pMa8eOjx/IIxU9yv3wqDEwACaGmj\nyrWVFNlzI6/lr35jPKsSWmUoW44vukD568wRHo6MM+GecgjNy/9eG77LtGA3Z+YV\n4rQGFv7Iwwf0FdkY+Fa8S8HU1QKBgQDEg3PlB8fXlGdT0UAIhVQnk2fa7+NeG0QY\n96bDYlZXGF30j1nwFo6en4f8pcyBJ8IQgOVRMh2bGVx2x+ffzGw0BcwFJaJpj+iQ\nv876LlrJWOycN4db7uj8NhOnwXcjBDmU2IXuGgjiMjw9YjXADeW6SUFcd8PbDFHG\nepZ5KM0qQQKBgGLAVnDhkbqvWmGwFtUu+MtEJZz19jr3Ma0ESIyQSL61J+/SL3C2\n39TBYEVtH/MwAhPLN3am0xMvBAUusMmX1kvsiNn6es4dSRTVngVOxyCSlaf309bG\n1c3611C5i9yLvwevJkxMH945zNokr15aY9rX3ERGjpGLwW7kOjwMsdBVAoGBAJbD\n416LoZ6blMqRd3cSE4ZpaPxnnyDL+mrNVXwBLgyT/UFr2ayBIdpAuqvy5/sO7ayL\nt2Ob92rPAkl/BT6GL12aNPSd8wTaC6tB/SGj/rMLLjyLvaWinc0iD+JcY3LSAvtX\nQylxf+9Kaz0M4//8qYtKOIMgv3qG8RY9ZsR9sSoBAoGBALNa7eZAhUgzj780NsSi\nf+65KYicJ96I0iDNkodF5K1Ka/9DTUV3fw3FDTiQgckrwqNtvTmLdKR2wGa46dl3\nUY6oTdMDgBxmJKWhwGGJ7UwikVhp0fmRLctuw5hLxdLLxnWJivL2gLQ3MH3jClf1\n03aUV6mLNhfIRrvpUh4q5bHP\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-xbcc8@perfect-jetty-241600.iam.gserviceaccount.com",
+  "client_id": "104212308157912357269",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xbcc8%40perfect-jetty-241600.iam.gserviceaccount.com"
+}
