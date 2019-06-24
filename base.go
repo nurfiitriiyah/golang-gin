@@ -18,7 +18,7 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:8080"},
+		AllowOrigins:     []string{"http://127.0.0.1:20001"},
 		AllowMethods:     []string{"PUT", "PATCH"},
 		AllowHeaders:     []string{"Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -37,19 +37,12 @@ func main() {
 	db := config.DBInit()
 	inDB := &controllers.InDB{DB: db}
 
-	router.GET("/ots", inDB.GetOTS)
 	router.POST("/checkFirebase", inDB.CheckFirebase)
 
 	router.POST("/login", inDB.CheckLogin)
+
+	router.GET("/ots", inDB.GetOTS)
 	router.POST("/detail/ots", inDB.GetDetailOTS)
-
-	router.GET("/persons/:id", inDB.GetPersons)
-
-	//router.GET("/person/:id", auth, inDB.GetPerson)
-	//router.GET("/checkAuth", auth)
-	//router.POST("/person", inDB.CreatePerson)
-	//router.PUT("/person", auth, inDB.UpdatePerson)
-	//router.DELETE("/person/:id", auth, inDB.DeletePerson)
 
 	router.Run(":10005")
 }
