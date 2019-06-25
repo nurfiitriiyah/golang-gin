@@ -1,10 +1,10 @@
 package controllers
 
 import (
+	"../structs"
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
-	"gin/structs"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/option"
 	"log"
