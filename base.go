@@ -7,17 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"time"
-
-	//"google.golang.org/api/option"
 	"log"
+	"os"
+	"time"
 )
 
 func main() {
-
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	hostFront := os.Getenv("FRONTEND")
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://35.240.214.149"},
+		AllowOrigins:     []string{hostFront},
 		AllowMethods:     []string{"PUT", "PATCH"},
 		AllowHeaders:     []string{"Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -27,11 +30,6 @@ func main() {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	db := config.DBInit()
 	inDB := &controllers.InDB{DB: db}
