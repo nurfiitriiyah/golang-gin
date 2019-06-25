@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"gin/structs"
+	"../structs"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
