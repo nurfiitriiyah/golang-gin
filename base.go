@@ -42,7 +42,10 @@ func main() {
 	router.POST("/detail/ots", inDB.GetDetailOTS)
 
 	router.GET("/ios", inDB.GetIOS)
-	//router.POST("/detail/ots", inDB.GetDetailOTS)
+	router.POST("/detail/ios", inDB.GetDetailIOS)
+
+	router.GET("/event/provid", inDB.GetProvid)
+	router.GET("/event/bagcode", inDB.GetBagCode)
 
 	router.Run(":10005")
 }
