@@ -20,6 +20,8 @@ func (idb *InDB) GetIOS(c *gin.Context) {
 	var (
 		stock       structs.TbIostock
 		singleStock [7]int
+		resultDate  []time.Time
+		result      gin.H
 	)
 	var data Datas
 
@@ -35,6 +37,7 @@ func (idb *InDB) GetIOS(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		} else {
+			resultDate = append(resultDate, stock.Iostock_Date)
 			singleStock[0] = stock.Iostock_in
 			singleStock[1] = stock.Iostock_out
 			singleStock[2] = stock.Iostock_stok
@@ -48,6 +51,10 @@ func (idb *InDB) GetIOS(c *gin.Context) {
 			})
 		}
 	}
-	c.JSON(http.StatusOK, data)
+	result = gin.H{
+		"label": resultDate,
+		"data":  data,
+	}
+	c.JSON(http.StatusOK, result)
 
 }
