@@ -306,6 +306,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			late = late.Where("outstanding_dispatcher = ?", value)
 			trans = trans.Where("outstanding_dispatcher = ?", value)
 			pack = pack.Where("outstanding_dispatcher = ?", value)
+			break
+
 		case "2":
 			disp = disp.Where("outstanding_area = ?", value)
 			retl = retl.Where("outstanding_area = ?", value)
@@ -313,6 +315,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			late = late.Where("outstanding_area = ?", value)
 			trans = trans.Where("outstanding_area = ?", value)
 			pack = pack.Where("outstanding_area = ?", value)
+			break
+
 		case "3":
 			subStrnDel := string(num[1:2])
 			switch subStrnDel {
@@ -345,6 +349,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 				trans = trans.Where("outstanding_late = ?", value)
 				pack = pack.Where("outstanding_late = ?", value)
 			}
+			break
+
 		case "4":
 			disp = disp.Where("outstanding_transporter = ?", value)
 			retl = retl.Where("outstanding_transporter = ?", value)
@@ -352,6 +358,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			late = late.Where("outstanding_transporter = ?", value)
 			trans = trans.Where("outstanding_transporter = ?", value)
 			pack = pack.Where("outstanding_transporter = ?", value)
+			break
+
 		case "5":
 
 			disp = disp.Where("outstanding_package = ?", value)
@@ -360,6 +368,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			late = late.Where("outstanding_package = ?", value)
 			trans = trans.Where("outstanding_package = ?", value)
 			pack = pack.Where("outstanding_package = ?", value)
+			break
+
 		case "6":
 
 			disp = disp.Where("retail_label = ?", value)
@@ -368,7 +378,16 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			late = late.Where("outstanding_retail = ?", value)
 			trans = trans.Where("outstanding_retail = ?", value)
 			pack = pack.Where("outstanding_retail = ?", value)
+			break
+		case "7":
 
+			disp = disp.Where("outstanding_location = ?", value)
+			retl = retl.Where("outstanding_location = ?", value)
+			area = area.Where("outstanding_location = ?", value)
+			late = late.Where("outstanding_location = ?", value)
+			trans = trans.Where("outstanding_location = ?", value)
+			pack = pack.Where("outstanding_location = ?", value)
+			break
 		case "8":
 			subStrnDelete := value[:1]
 			valueDel := trimFirstRune(value)

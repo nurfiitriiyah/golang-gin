@@ -67,6 +67,22 @@ type TbDelivery struct {
 	Delivery_Dest        string
 }
 
+type TbIostock struct {
+	Iostock_Dispatch    string
+	Iostock_Date        time.Time
+	Iostock_type        string
+	Iostock_packg       string
+	Iostock_in          int
+	Iostock_out         int
+	Iostock_stok        int
+	Iostock_gnt_in      int
+	Iostock_que         int
+	Iostock_otw         int
+	Iostock_osdo        int
+	Iostock_update_at   time.Time
+	Iostock_last_update time.Time
+}
+
 type TbLog struct {
 	Log_Id     string
 	Log_Detail string

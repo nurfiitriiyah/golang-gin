@@ -41,5 +41,8 @@ func main() {
 	router.GET("/ots", inDB.GetOTS)
 	router.POST("/detail/ots", inDB.GetDetailOTS)
 
+	router.GET("/ios", inDB.GetIOS)
+	//router.POST("/detail/ots", inDB.GetDetailOTS)
+
 	router.Run(":10005")
 }
