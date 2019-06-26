@@ -8,22 +8,32 @@ import (
 )
 
 func (idb *InDB) GetIOS(c *gin.Context) {
-	type ArrayData struct {
-		DateStock  time.Time
-		TotalStock [7]int
-	}
-
-	type Datas struct {
-		Result []ArrayData
-	}
 
 	var (
-		stock       structs.TbIostock
-		singleStock [7]int
-		resultDate  []time.Time
-		result      gin.H
+		stock      structs.TbIostock
+		resultDate []time.Time
+		result     gin.H
+
+		singleStockIn    []int
+		singleStockOut   []int
+		singleStockTotal []int
+		singleStockQntIn []int
+		singleStockQue   []int
+		singleStockOtw   []int
+		singleStockOsdo  []int
 	)
-	var data Datas
+
+	type ResultStruct struct {
+		SingleStockIn    []int
+		SingleStockOut   []int
+		SingleStockTotal []int
+		SingleStockQntIn []int
+		SingleStockQue   []int
+		SingleStockOtw   []int
+		SingleStockOsdo  []int
+	}
+
+	var datas ResultStruct
 
 	queryStock, err := idb.DB.Table("tb_iostock").Select("iostok_date as stock_date,sum(iostok_in) as stock_in,sum(iostok_out) as stock_out,sum(iostok_stok) as stock_total,sum(iostok_gnt_in) as stock_change,sum(iostok_que) as stock_que,sum(iostok_otw) as stock_otw,sum(iostok_osdo) as stock_osdo").Group("iostok_date").Rows()
 
@@ -38,22 +48,27 @@ func (idb *InDB) GetIOS(c *gin.Context) {
 			c.Abort()
 		} else {
 			resultDate = append(resultDate, stock.Iostock_Date)
-			singleStock[0] = stock.Iostock_in
-			singleStock[1] = stock.Iostock_out
-			singleStock[2] = stock.Iostock_stok
-			singleStock[3] = stock.Iostock_gnt_in
-			singleStock[4] = stock.Iostock_que
-			singleStock[5] = stock.Iostock_otw
-			singleStock[6] = stock.Iostock_osdo
-			data.Result = append(data.Result, ArrayData{
-				DateStock:  stock.Iostock_Date,
-				TotalStock: singleStock,
-			})
+			singleStockIn = append(singleStockIn, stock.Iostock_in)
+			singleStockOut = append(singleStockOut, stock.Iostock_out)
+			singleStockTotal = append(singleStockTotal, stock.Iostock_stok)
+			singleStockQntIn = append(singleStockQntIn, stock.Iostock_gnt_in)
+			singleStockQue = append(singleStockQue, stock.Iostock_que)
+			singleStockOtw = append(singleStockOtw, stock.Iostock_otw)
+			singleStockOsdo = append(singleStockOsdo, stock.Iostock_osdo)
 		}
 	}
+
 	result = gin.H{
 		"label": resultDate,
-		"data":  data,
+		"data": gin.H{
+			"StockIn":    singleStockIn,
+			"StockOut":   singleStockOut,
+			"StockTotal": singleStockTotal,
+			"StockQntIn": singleStockQntIn,
+			"StockQue":   singleStockQue,
+			"StockOtw":   singleStockOtw,
+			"StockOsdo":  singleStockOsdo,
+		},
 	}
 	c.JSON(http.StatusOK, result)
 
