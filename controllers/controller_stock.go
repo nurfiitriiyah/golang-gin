@@ -2,7 +2,7 @@ package controllers
 
 import (
 	//"fmt"
-	"gin/structs"
+	"../structs"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
