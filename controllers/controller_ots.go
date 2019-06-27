@@ -394,7 +394,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 			switch subStrnDelete {
 			case "1":
-				disp = disp.Select("outstanding_location,sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher != ?", valueDel)
+				disp = disp.Where("outstanding_dispatcher != ?", valueDel)
 				retl = retl.Where("outstanding_dispatcher != ?", valueDel)
 				area = area.Where("outstanding_dispatcher != ?", valueDel)
 				late = late.Where("outstanding_dispatcher != ?", valueDel)
