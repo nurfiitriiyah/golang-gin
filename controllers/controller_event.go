@@ -12,7 +12,7 @@ func (idb *InDB) GetProvid(c *gin.Context) {
 		provid []structs.TbProvidEvent
 		result gin.H
 	)
-	idb.DB.Table("tb_provids").Select("provid_code,provid_name").Find(&provid)
+	idb.DB.Table("tb_provids").Select("provid_code,provid_name").Order("provid_name asc").Find(&provid)
 	result = gin.H{
 		"result": provid,
 	}
@@ -25,7 +25,7 @@ func (idb *InDB) GetBagCode(c *gin.Context) {
 		bagCode []structs.TbBagcodeEvent
 		result  gin.H
 	)
-	idb.DB.Table("tb_bagcodes").Select("bagcode_code,bagcode_name").Find(&bagCode)
+	idb.DB.Table("tb_bagcodes").Select("bagcode_code,bagcode_name").Order("bagcode_name").Find(&bagCode)
 	result = gin.H{
 		"result": bagCode,
 	}

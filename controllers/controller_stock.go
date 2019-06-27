@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	//"fmt"
 	"gin/structs"
 	"github.com/gin-gonic/gin"
@@ -75,6 +74,10 @@ func (idb *InDB) GetDetailIOS(c *gin.Context) {
 		resultDate []time.Time
 		result     gin.H
 
+		secondCharBagCode string
+		firstCharBagCode  string
+
+		findFirstProvid  string
 		singleStockIn    []int
 		singleStockOut   []int
 		singleStockTotal []int
@@ -85,8 +88,21 @@ func (idb *InDB) GetDetailIOS(c *gin.Context) {
 	)
 
 	nums := createParams.Data
-	fmt.Println(nums[0])
-	queryStock, err := idb.DB.Table("tb_iostock").Select("iostok_date as stock_date,sum(iostok_in) as stock_in,sum(iostok_out) as stock_out,sum(iostok_stok) as stock_total,sum(iostok_gnt_in) as stock_change,sum(iostok_que) as stock_que,sum(iostok_otw) as stock_otw,sum(iostok_osdo) as stock_osdo").Group("iostok_date").Where("iostok_date BETWEEN ? AND ? ", nums[0], nums[1]).Rows()
+	if nums[2] != "" {
+		firstCharBagCode = "%" + nums[2][:1] + "%"
+		secondCharBagCode = "%" + trimFirstRune(nums[2]) + "%"
+	} else {
+		firstCharBagCode = "%%"
+		secondCharBagCode = "%%"
+	}
+
+	if nums[3] != "" {
+		findFirstProvid = "%" + nums[3] + "%"
+	} else {
+		findFirstProvid = "%%"
+	}
+
+	queryStock, err := idb.DB.Table("tb_iostock").Select("iostok_date as stock_date,sum(iostok_in) as stock_in,sum(iostok_out) as stock_out,sum(iostok_stok) as stock_total,sum(iostok_gnt_in) as stock_change,sum(iostok_que) as stock_que,sum(iostok_otw) as stock_otw,sum(iostok_osdo) as stock_osdo").Group("iostok_date").Where("iostok_date BETWEEN ? AND ? AND iostok_type like ? AND iostok_packg like ? AND iostok_dispatch like ?", nums[0], nums[1], firstCharBagCode, secondCharBagCode, findFirstProvid).Rows()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
