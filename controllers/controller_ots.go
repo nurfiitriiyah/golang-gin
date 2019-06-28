@@ -183,7 +183,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Trans
 	  **/
 	go func() {
-		trans, err := idb.DB.Table("tb_outstandings").Select(" substr(transporter_name,1,12),sum(outstanding_quantity)").Joins("JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_transporter").Rows()
+		trans, err := idb.DB.Table("tb_outstandings").Select(" substr(transporter_name,1,12),sum(outstanding_quantity) as totals").Joins("JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_transporter").Order("totals desc").Rows()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
@@ -295,7 +295,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 	area := idb.DB.Table("tb_outstandings").Select("outstanding_area,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_area")
 	late := idb.DB.Table("tb_outstandings").Select("outstanding_late,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_late")
 
-	trans := idb.DB.Table("tb_outstandings").Select("substr(transporter_name,1,12) as transporter_name ,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_transporter")
+	trans := idb.DB.Table("tb_outstandings").Select("substr(transporter_name,1,12) as transporter_name ,sum(outstanding_quantity) as totals").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Order("totals desc").Group("outstanding_transporter")
 
 	pack := idb.DB.Table("tb_outstandings").Select("outstanding_package,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_package")
 	for _, num := range nums {

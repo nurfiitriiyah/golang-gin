@@ -22,7 +22,7 @@ type Credential struct {
 }
 
 /**
-Migration Tabel User
+HERE MIGRATION TABLES INTO TABLES
 **/
 type TbUserLogins struct {
 	User_id       string `gorm:"unique;not null"`
@@ -131,11 +131,6 @@ type TbRetail struct {
 	Retail_label string
 }
 
-type UserFirebase struct {
-	UserID       string `json:"user_id"`
-	Notification string `json:"notification"`
-}
-
 /**
 HERE DECLARATION FOR EVENT(Combo box or any event in frontend)
 **/
@@ -156,4 +151,12 @@ HERE DECLARATION FOR REQUEST FROM API
 
 type CreateParams struct {
 	Data []string `json:"data"`
+}
+
+/**
+HERE FOR SET FIREBASE - GO
+**/
+type UserFirebase struct {
+	UserID       string `json:"user_id"`
+	Notification string `json:"notification"`
 }
