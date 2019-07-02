@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
+	"time"
 )
 
 /**
@@ -37,6 +38,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 
 		labelTransportOther []string
 		TotalTransportOther []int
+
+		labelTimeUpdate time.Time
 	)
 
 	var wg sync.WaitGroup
@@ -89,17 +92,18 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Disp
 	  **/
 	go func() {
-		disp, err := idb.DB.Table("tb_outstandings").Select("outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher").Rows()
+		disp, err := idb.DB.Table("tb_outstandings").Select("outstanding_update,outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher").Rows()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for disp.Next() {
-			err := disp.Scan(&Ots.Outstanding_dispatcher, &Ots.Outstanding_quantity)
+			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_dispatcher, &Ots.Outstanding_quantity)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
+				labelTimeUpdate = Ots.Outstanding_update
 				labelDisp = append(labelDisp, Ots.Outstanding_dispatcher)
 				TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
 			}
@@ -212,6 +216,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 
 	wg.Wait()
 	result = gin.H{
+		"lastUpdate": labelTimeUpdate,
 		"disp": gin.H{
 			"label": labelDisp,
 			"total": TotalDisp,
@@ -281,6 +286,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		TotalTransportOther []int
 
 		prepFindTransport string
+		labelTimeUpdate   time.Time
 	)
 
 	re := regexp.MustCompile("[0-9]+")
@@ -290,21 +296,20 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		c.Abort()
 	}
 	nums := createParams.Data
-	disp := idb.DB.Table("tb_outstandings").Select("outstanding_dispatcher,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_dispatcher")
+	disp := idb.DB.Table("tb_outstandings").Select("outstanding_update,outstanding_dispatcher,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_dispatcher")
 	retl := idb.DB.Table("tb_outstandings").Select("retail_label,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_retail")
 	area := idb.DB.Table("tb_outstandings").Select("outstanding_area,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_area")
 	late := idb.DB.Table("tb_outstandings").Select("outstanding_late,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_late")
-
 	trans := idb.DB.Table("tb_outstandings").Select("substr(transporter_name,1,12) as transporter_name ,sum(outstanding_quantity) as totals").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Order("totals desc").Group("outstanding_transporter")
-
 	pack := idb.DB.Table("tb_outstandings").Select("outstanding_package,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_package")
+
 	for _, num := range nums {
 		subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
 		value := trimFirstRune(num)
 
 		switch subStrn {
 		case "1":
-			disp = disp.Select("substr(outstanding_location,1,12),sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher = ?", value)
+			disp = disp.Select("outstanding_update,substr(outstanding_location,1,12),sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher = ?", value)
 			retl = retl.Where("outstanding_dispatcher = ?", value)
 			area = area.Where("outstanding_dispatcher = ?", value)
 			late = late.Where("outstanding_dispatcher = ?", value)
@@ -483,11 +488,12 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 		var i = 0
 		for resDisp.Next() {
-			err := resDisp.Scan(&Ots.Outstanding_location, &Ots.Outstanding_quantity)
+			err := resDisp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_location, &Ots.Outstanding_quantity)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
+				labelTimeUpdate = Ots.Outstanding_update
 				labelDisp = append(labelDisp, Ots.Outstanding_location)
 				TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
 			}
@@ -650,6 +656,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 	wg.Wait()
 	result = gin.H{
+		"lastUpdate": labelTimeUpdate,
+
 		"disp": gin.H{
 			"label": labelDisp,
 			"total": TotalDisp,
