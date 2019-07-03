@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"../structs"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
@@ -49,14 +50,18 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Retail
 	  **/
 	go func() {
-		retl, err := idb.DB.Table("tb_outstandings").Select("retail_label,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id").Group("outstanding_retail").Rows()
+		retl, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), ret.retail_label ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("retail_id").Rows()
 		if err != nil {
+			fmt.Println("----------------ERROR ret------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for retl.Next() {
-			err := retl.Scan(&Retail.Retail_label, &Ots.Outstanding_quantity)
+			err := retl.Scan(&Ots.Outstanding_quantity, &Retail.Retail_label)
 			if err != nil {
+				fmt.Println("----------------ERROR ret------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -70,15 +75,19 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Pack
 	  **/
 	go func() {
-		pack, err := idb.DB.Table("tb_outstandings").Select("outstanding_package,sum(outstanding_quantity)").Group("outstanding_package").Rows()
+		pack, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), bag.bagcode_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("bagcode_code").Rows()
 
 		if err != nil {
+			fmt.Println("----------------ERROR pack------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for pack.Next() {
-			err := pack.Scan(&Ots.Outstanding_package, &Ots.Outstanding_quantity)
+			err := pack.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_package)
 			if err != nil {
+				fmt.Println("----------------ERROR pack------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -92,14 +101,18 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Disp
 	  **/
 	go func() {
-		disp, err := idb.DB.Table("tb_outstandings").Select("outstanding_update,outstanding_dispatcher,sum(outstanding_quantity)").Group("outstanding_dispatcher").Rows()
+		disp, err := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("provid_ktgr").Rows()
 		if err != nil {
+			fmt.Println("----------------ERROR dispatch------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for disp.Next() {
-			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_dispatcher, &Ots.Outstanding_quantity)
+			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_quantity, &Ots.Outstanding_dispatcher)
 			if err != nil {
+				fmt.Println("----------------ERROR dispatch------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -114,15 +127,19 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Area
 	  **/
 	go func() {
-		rows, err := idb.DB.Table("tb_outstandings").Select("outstanding_area,sum(outstanding_quantity)").Group("outstanding_area").Rows()
+		rows, err := idb.DB.Table("tb_outstandings as ots").Select(" floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ").Rows()
 		if err != nil {
+			fmt.Println("----------------ERROR area------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		var i = 0
 		for rows.Next() {
-			err := rows.Scan(&Ots.Outstanding_area, &Ots.Outstanding_quantity)
+			err := rows.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_area)
 			if err != nil {
+				fmt.Println("----------------ERROR area------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -141,15 +158,19 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		TotalLateM10 := 0
 		TotalLateL1 := 0
 		TotalLateB610 := 0
-		late, err := idb.DB.Table("tb_outstandings").Select("outstanding_late,sum(outstanding_quantity)").Group("outstanding_late").Rows()
+		late, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), ots.outstanding_late").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("ots.outstanding_late").Rows()
 		if err != nil {
+			fmt.Println("----------------ERROR late------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 
 		for late.Next() {
-			err := late.Scan(&Ots.Outstanding_late, &Ots.Outstanding_quantity)
+			err := late.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_late)
 			if err != nil {
+				fmt.Println("----------------ERROR late------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -187,15 +208,19 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Trans
 	  **/
 	go func() {
-		trans, err := idb.DB.Table("tb_outstandings").Select(" substr(transporter_name,1,12),sum(outstanding_quantity) as totals").Joins("JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_transporter").Order("totals desc").Rows()
+		trans, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)) as total, trs.transporter_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc").Rows()
 		if err != nil {
+			fmt.Println("----------------ERROR trans------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		var i = 0
 		for trans.Next() {
-			err := trans.Scan(&Ots.Outstanding_transporter, &Ots.Outstanding_quantity)
+			err := trans.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_transporter)
 			if err != nil {
+				fmt.Println("----------------ERROR trans------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -296,12 +321,12 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		c.Abort()
 	}
 	nums := createParams.Data
-	disp := idb.DB.Table("tb_outstandings").Select("outstanding_update,outstanding_dispatcher,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_dispatcher")
-	retl := idb.DB.Table("tb_outstandings").Select("retail_label,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_retail")
-	area := idb.DB.Table("tb_outstandings").Select("outstanding_area,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_area")
-	late := idb.DB.Table("tb_outstandings").Select("outstanding_late,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_late")
-	trans := idb.DB.Table("tb_outstandings").Select("substr(transporter_name,1,12) as transporter_name ,sum(outstanding_quantity) as totals").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Order("totals desc").Group("outstanding_transporter")
-	pack := idb.DB.Table("tb_outstandings").Select("outstanding_package,sum(outstanding_quantity)").Joins("JOIN tb_pairing_retail on outstanding_retail = retail_id JOIN tb_transporters on outstanding_transporter = transporter_code").Group("outstanding_package")
+	disp := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("provid_ktgr")
+	retl := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), ret.retail_label ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("retail_id")
+	area := idb.DB.Table("tb_outstandings as ots").Select(" floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ")
+	late := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), ots.outstanding_late").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("ots.outstanding_late")
+	trans := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)) as total, trs.transporter_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc")
+	pack := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)), bag.bagcode_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("bagcode_code")
 
 	for _, num := range nums {
 		subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
@@ -309,21 +334,21 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 		switch subStrn {
 		case "1":
-			disp = disp.Select("outstanding_update,substr(outstanding_location,1,12),sum(outstanding_quantity)").Group("outstanding_location").Where("outstanding_dispatcher = ?", value)
-			retl = retl.Where("outstanding_dispatcher = ?", value)
-			area = area.Where("outstanding_dispatcher = ?", value)
-			late = late.Where("outstanding_dispatcher = ?", value)
-			trans = trans.Where("outstanding_dispatcher = ?", value)
-			pack = pack.Where("outstanding_dispatcher = ?", value)
+			disp = disp.Select("outstanding_updt,floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)),  provid_name").Group("provid_name").Where("provid_ktgr = ?", value)
+			retl = retl.Where("provid_ktgr = ?", value)
+			area = area.Where("provid_ktgr = ?", value)
+			late = late.Where("provid_ktgr = ?", value)
+			trans = trans.Where("provid_ktgr = ?", value)
+			pack = pack.Where("provid_ktgr = ?", value)
 			break
 
 		case "2":
-			disp = disp.Where("outstanding_area = ?", value)
-			retl = retl.Where("outstanding_area = ?", value)
-			area = area.Where("outstanding_area = ?", value)
-			late = late.Where("outstanding_area = ?", value)
-			trans = trans.Where("outstanding_area = ?", value)
-			pack = pack.Where("outstanding_area = ?", value)
+			disp = disp.Where("tp_area_alias2 = ?", value)
+			retl = retl.Where("tp_area_alias2 = ?", value)
+			area = area.Where("tp_area_alias2 = ?", value)
+			late = late.Where("tp_area_alias2 = ?", value)
+			trans = trans.Where("tp_area_alias2 = ?", value)
+			pack = pack.Where("tp_area_alias2 = ?", value)
 			break
 
 		case "3":
@@ -372,31 +397,31 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 		case "5":
 
-			disp = disp.Where("outstanding_package = ?", value)
-			retl = retl.Where("outstanding_package = ?", value)
-			area = area.Where("outstanding_package = ?", value)
-			late = late.Where("outstanding_package = ?", value)
-			trans = trans.Where("outstanding_package = ?", value)
-			pack = pack.Where("outstanding_package = ?", value)
+			disp = disp.Where("bagcode_name = ?", value)
+			retl = retl.Where("bagcode_name = ?", value)
+			area = area.Where("bagcode_name = ?", value)
+			late = late.Where("bagcode_name = ?", value)
+			trans = trans.Where("bagcode_name = ?", value)
+			pack = pack.Where("bagcode_name = ?", value)
 			break
 
 		case "6":
 
 			disp = disp.Where("retail_label = ?", value)
-			retl = retl.Where("outstanding_retail = ?", value)
-			area = area.Where("outstanding_retail = ?", value)
-			late = late.Where("outstanding_retail = ?", value)
-			trans = trans.Where("outstanding_retail = ?", value)
-			pack = pack.Where("outstanding_retail = ?", value)
+			retl = retl.Where("retail_label = ?", value)
+			area = area.Where("retail_label = ?", value)
+			late = late.Where("retail_label = ?", value)
+			trans = trans.Where("retail_label = ?", value)
+			pack = pack.Where("retail_label = ?", value)
 			break
 		case "7":
 
-			disp = disp.Where("outstanding_location = ?", value)
-			retl = retl.Where("outstanding_location = ?", value)
-			area = area.Where("outstanding_location = ?", value)
-			late = late.Where("outstanding_location = ?", value)
-			trans = trans.Where("outstanding_location = ?", value)
-			pack = pack.Where("outstanding_location = ?", value)
+			disp = disp.Where("provid_name = ?", value)
+			retl = retl.Where("provid_name = ?", value)
+			area = area.Where("provid_name = ?", value)
+			late = late.Where("provid_name = ?", value)
+			trans = trans.Where("provid_name = ?", value)
+			pack = pack.Where("provid_name = ?", value)
 			break
 		case "8":
 			subStrnDelete := value[:1]
@@ -404,19 +429,19 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 			switch subStrnDelete {
 			case "1":
-				disp = disp.Where("outstanding_dispatcher != ?", valueDel)
-				retl = retl.Where("outstanding_dispatcher != ?", valueDel)
-				area = area.Where("outstanding_dispatcher != ?", valueDel)
-				late = late.Where("outstanding_dispatcher != ?", valueDel)
-				trans = trans.Where("outstanding_dispatcher != ?", valueDel)
-				pack = pack.Where("outstanding_dispatcher != ?", valueDel)
+				disp = disp.Where("provid_ktgr != ?", valueDel)
+				retl = retl.Where("provid_ktgr != ?", valueDel)
+				area = area.Where("provid_ktgr != ?", valueDel)
+				late = late.Where("provid_ktgr != ?", valueDel)
+				trans = trans.Where("provid_ktgr != ?", valueDel)
+				pack = pack.Where("provid_ktgr != ?", valueDel)
 			case "2":
-				disp = disp.Where("outstanding_area != ?", valueDel)
-				retl = retl.Where("outstanding_area != ?", valueDel)
-				area = area.Where("outstanding_area != ?", valueDel)
-				late = late.Where("outstanding_area != ?", valueDel)
-				trans = trans.Where("outstanding_area != ?", valueDel)
-				pack = pack.Where("outstanding_area != ?", valueDel)
+				disp = disp.Where("tp_area_alias2 != ?", valueDel)
+				retl = retl.Where("tp_area_alias2 != ?", valueDel)
+				area = area.Where("tp_area_alias2 != ?", valueDel)
+				late = late.Where("tp_area_alias2 != ?", valueDel)
+				trans = trans.Where("tp_area_alias2 != ?", valueDel)
+				pack = pack.Where("tp_area_alias2 != ?", valueDel)
 			case "3":
 				subStrnDelLate := valueDel[:1]
 				switch subStrnDelLate {
@@ -451,28 +476,28 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 				}
 
 			case "4":
-				disp = disp.Where("outstanding_transporter != ?", valueDel)
-				retl = retl.Where("outstanding_transporter != ?", valueDel)
-				area = area.Where("outstanding_transporter != ?", valueDel)
-				late = late.Where("outstanding_transporter != ?", valueDel)
-				trans = trans.Where("outstanding_transporter != ?", valueDel)
-				pack = pack.Where("outstanding_transporter != ?", valueDel)
+				disp = disp.Where("transporter_name != ?", valueDel)
+				retl = retl.Where("transporter_name != ?", valueDel)
+				area = area.Where("transporter_name != ?", valueDel)
+				late = late.Where("transporter_name != ?", valueDel)
+				trans = trans.Where("transporter_name != ?", valueDel)
+				pack = pack.Where("transporter_name != ?", valueDel)
 			case "5":
 
-				disp = disp.Where("outstanding_package != ?", valueDel)
-				retl = retl.Where("outstanding_package != ?", valueDel)
-				area = area.Where("outstanding_package != ?", valueDel)
-				late = late.Where("outstanding_package != ?", valueDel)
-				trans = trans.Where("outstanding_package != ?", valueDel)
-				pack = pack.Where("outstanding_package != ?", valueDel)
+				disp = disp.Where("bagcode_name != ?", valueDel)
+				retl = retl.Where("bagcode_name != ?", valueDel)
+				area = area.Where("bagcode_name != ?", valueDel)
+				late = late.Where("bagcode_name != ?", valueDel)
+				trans = trans.Where("bagcode_name != ?", valueDel)
+				pack = pack.Where("bagcode_name != ?", valueDel)
 			case "6":
 
 				disp = disp.Where("retail_label != ?", valueDel)
-				retl = retl.Where("outstanding_retail != ?", valueDel)
-				area = area.Where("outstanding_retail != ?", valueDel)
-				late = late.Where("outstanding_retail != ?", valueDel)
-				trans = trans.Where("outstanding_retail != ?", valueDel)
-				pack = pack.Where("outstanding_retail != ?", valueDel)
+				retl = retl.Where("retail_label != ?", valueDel)
+				area = area.Where("retail_label != ?", valueDel)
+				late = late.Where("retail_label != ?", valueDel)
+				trans = trans.Where("retail_label != ?", valueDel)
+				pack = pack.Where("retail_label != ?", valueDel)
 			}
 		}
 	}
@@ -488,7 +513,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 		var i = 0
 		for resDisp.Next() {
-			err := resDisp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_location, &Ots.Outstanding_quantity)
+			err := resDisp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_quantity, &Ots.Outstanding_location)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
@@ -512,7 +537,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 		var i = 0
 		for resRet.Next() {
-			err := resRet.Scan(&Retail.Retail_label, &Ots.Outstanding_quantity)
+			err := resRet.Scan(&Ots.Outstanding_quantity, &Retail.Retail_label)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
@@ -535,7 +560,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 		var i = 0
 		for resPack.Next() {
-			err := resPack.Scan(&Ots.Outstanding_package, &Ots.Outstanding_quantity)
+			err := resPack.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_package)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
@@ -558,7 +583,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 		var i = 0
 		for resArea.Next() {
-			err := resArea.Scan(&Ots.Outstanding_area, &Ots.Outstanding_quantity)
+			err := resArea.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_area)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
@@ -585,7 +610,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			c.Abort()
 		}
 		for resLate.Next() {
-			err := resLate.Scan(&Ots.Outstanding_late, &Ots.Outstanding_quantity)
+			err := resLate.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_late)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
@@ -635,7 +660,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		}
 		var i = 0
 		for resTrans.Next() {
-			err := resTrans.Scan(&Ots.Outstanding_transporter, &Ots.Outstanding_quantity)
+			err := resTrans.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_transporter)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
