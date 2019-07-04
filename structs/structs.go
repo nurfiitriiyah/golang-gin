@@ -141,8 +141,9 @@ type TbProvidEvent struct {
 }
 
 type TbBagcodeEvent struct {
-	Bagcode_Code string
-	Bagcode_Name string
+	Bagcode_Code  string
+	Bagcode_Name  string
+	Bagcode_Names float32
 }
 
 /**
@@ -159,4 +160,20 @@ HERE FOR SET FIREBASE - GO
 type UserFirebase struct {
 	UserID       string `json:"user_id"`
 	Notification string `json:"notification"`
+}
+
+/**
+HERE FOR DECLARE STRUCT IN SCAN
+**/
+type TbOutstandingStruct struct {
+	Outstanding_transporter string
+	Outstanding_kategori    string
+	Outstanding_dispatcher  string
+	Outstanding_area        string
+	Outstanding_quantity    string
+	Outstanding_update      time.Time
+	Outstanding_location    string
+	Outstanding_late        int
+	Outstanding_package     string
+	Outstanding_retail      int
 }
