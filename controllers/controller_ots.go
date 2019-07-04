@@ -345,7 +345,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		case "2":
 			disp = disp.Where("tp_area_alias2 = ?", value)
 			retl = retl.Where("tp_area_alias2 = ?", value)
-			area = area.Where("tp_area_alias2 = ?", value)
+			area = area.Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)) AS total,SUBSTR(dest.destination_zona,1,12)").Where("tp_area_alias2 = ?", value).Group("destination_zona")
 			late = late.Where("tp_area_alias2 = ?", value)
 			trans = trans.Where("tp_area_alias2 = ?", value)
 			pack = pack.Where("tp_area_alias2 = ?", value)

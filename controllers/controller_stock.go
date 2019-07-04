@@ -136,13 +136,4 @@ func (idb *InDB) GetDetailIOS(c *gin.Context) {
 		"singleStockOsdo":  singleStockOsdo,
 	}
 	c.JSON(http.StatusOK, result)
-
-	//fmt.Println(nums[0])
-	//fmt.Println("==========================================")
-	//fmt.Println(nums[1])
-	//fmt.Println("==========================================")
-	//fmt.Println(nums[2])
-	//fmt.Println("==========================================")
-	//fmt.Println(nums[3])
-	//fmt.Println("==========================================")
 }
