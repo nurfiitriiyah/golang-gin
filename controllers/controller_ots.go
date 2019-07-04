@@ -628,20 +628,26 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			}
 
 		}
-
 		late6Days := strconv.FormatFloat(TotalLateL1, 'f', 2, 64)
-
 		lateB6T10 := strconv.FormatFloat(TotalLateB610, 'f', 2, 64)
 		lateM10 := strconv.FormatFloat(TotalLateM10, 'f', 2, 64)
 
-		labelLate = append(labelLate, 6)
-		TotalLate = append(TotalLate, late6Days)
+		if TotalLateL1 > 0.0 {
 
-		labelLate = append(labelLate, 7)
-		TotalLate = append(TotalLate, lateB6T10)
+			labelLate = append(labelLate, 6)
+			TotalLate = append(TotalLate, late6Days)
+		}
 
-		labelLate = append(labelLate, 8)
-		TotalLate = append(TotalLate, lateM10)
+		if TotalLateB610 > 0.0 {
+			labelLate = append(labelLate, 7)
+			TotalLate = append(TotalLate, lateB6T10)
+		}
+
+		if TotalLateM10 > 0.0 {
+			labelLate = append(labelLate, 8)
+			TotalLate = append(TotalLate, lateM10)
+
+		}
 
 		defer wg.Done()
 	}()
