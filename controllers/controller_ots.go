@@ -483,6 +483,15 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 				trans = trans.Where("retail_label != ?", valueDel)
 				pack = pack.Where("retail_label != ?", valueDel)
 			}
+		case "9":
+			prepFindWil := value + "%"
+			disp = disp.Where("destination_zona LIKE ?", prepFindWil)
+			retl = retl.Where("destination_zona LIKE ?", prepFindWil)
+			area = area.Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000),SUBSTR(dest.destination_wilayah, 1, 12)").Where("destination_zona LIKE ?", prepFindWil).Group("dest.destination_wilayah")
+			late = late.Where("destination_zona LIKE ?", prepFindWil)
+			trans = trans.Where("destination_zona LIKE ?", prepFindWil)
+			pack = pack.Where("destination_zona LIKE ?", prepFindWil)
+			break
 		}
 	}
 
