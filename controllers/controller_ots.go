@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"../structs"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
@@ -71,7 +72,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Pack
 	  **/
 	go func() {
-		pack, err := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), bag.bagcode_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("bagcode_code").Rows()
+		pack, err := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), bag.bagcode_name").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id join tb_pairing_order as ord ON bag.bagcode_name = ord.order_label").Where("order_pages = 'OTS'").Group("bagcode_code").Order("order_data ASC").Rows()
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
@@ -93,14 +94,18 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Disp
 	  **/
 	go func() {
-		disp, err := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("provid_ktgr").Rows()
+		disp, err := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id join tb_pairing_order AS ord on prov.provid_ktgr = ord.order_label").Where("ord.order_pages = 'OTS'").Order("order_data").Group("provid_ktgr").Rows()
 		if err != nil {
+			fmt.Println("--------------------ERROR DISP---------------------------")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for disp.Next() {
 			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_quantity, &Ots.Outstanding_dispatcher)
 			if err != nil {
+				fmt.Println("--------------------ERROR DISP---------------------------")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -115,7 +120,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Area
 	  **/
 	go func() {
-		rows, err := idb.DB.Table("tb_outstandings as ots").Select(" ((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ").Rows()
+		rows, err := idb.DB.Table("tb_outstandings as ots").Select(" ((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ").Order("tp_area_code").Rows()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
@@ -194,7 +199,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Trans
 	  **/
 	go func() {
-		trans, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)) as total, SUBSTR(trs.transporter_name,1,12) ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc").Rows()
+		trans, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)) as total, trs.transporter_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc").Rows()
 		if err != nil {
 
 			c.JSON(http.StatusInternalServerError, err)
@@ -305,12 +310,12 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		c.Abort()
 	}
 	nums := createParams.Data
-	disp := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("provid_ktgr")
+	disp := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id join tb_pairing_order as ord ON bag.bagcode_name = ord.order_label").Where("order_pages = 'OTS'").Group("provid_ktgr").Order("order_data ASC")
 	retl := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), ret.retail_label ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("retail_id")
-	area := idb.DB.Table("tb_outstandings as ots").Select(" ((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ")
+	area := idb.DB.Table("tb_outstandings as ots").Select(" ((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ").Order("tp_area_code")
 	late := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), ots.outstanding_late").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("ots.outstanding_late")
-	trans := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000) as total, SUBSTR(trs.transporter_name,1,12)").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc")
-	pack := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), bag.bagcode_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("bagcode_code")
+	trans := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000) as total, trs.transporter_name").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc")
+	pack := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), bag.bagcode_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id join tb_pairing_order as ord ON bag.bagcode_name = ord.order_label").Where("order_pages = 'OTS'").Group("bagcode_code").Order("order_data ASC")
 
 	for _, num := range nums {
 		subStrn := string([]rune((re.FindAllString(num, -1))[0])[0:1])
