@@ -171,6 +171,7 @@ type TbOutstandingStruct struct {
 	Outstanding_dispatcher  string
 	Outstanding_area        string
 	Outstanding_quantity    string
+	Outstanding_quantitys   int
 	Outstanding_update      time.Time
 	Outstanding_location    string
 	Outstanding_late        int

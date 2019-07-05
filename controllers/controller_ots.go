@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"../structs"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
@@ -16,32 +15,38 @@ Get default data ots, and create pie chart in frontend
 */
 func (idb *InDB) GetOTS(c *gin.Context) {
 	var (
+		OtsArray      []structs.TbOutstandingStruct
+		OtsArrayArea  []structs.TbOutstandingStruct
+		OtsArrayRet   []structs.TbOutstandingStruct
+		OtsArrayPack  []structs.TbOutstandingStruct
+		OtsArrayTrans []structs.TbOutstandingStruct
+
 		Ots    structs.TbOutstandingStruct
 		Retail structs.TbRetail
 		result gin.H
 
 		labelArea []string
-		TotalArea []string
-
+		TotalArea []int
+		//
 		labelDisp []string
-		TotalDisp []string
+		TotalDisp []int
 
 		labelPack []string
-		TotalPack []string
+		TotalPack []int
 
 		labelRetl []string
-		TotalRetl []string
+		TotalRetl []int
 
 		labelLate []int
-		TotalLate []string
+		TotalLate []int
 
 		labelTransport []string
-		TotalTransport []string
+		TotalTransport []int
 
-		labelTransportOther []string
-		TotalTransportOther []string
+		//labelTransportOther []string
+		//TotalTransportOther []string
 
-		labelTimeUpdate time.Time
+		//labelTimeUpdate time.Time
 	)
 
 	var wg sync.WaitGroup
@@ -51,20 +56,39 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Retail
 	  **/
 	go func() {
-		retl, err := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), ret.retail_label ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("retail_id").Rows()
+		retl, err := idb.DB.Raw("CALL getDefaultRetail()").Find(&OtsArrayRet).Rows()
+		lengthRet := len(OtsArrayRet)
+		prepIncRet := 0
+		prepTempLabelRet := ""
+		prepTempTotalRet := 0
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for retl.Next() {
-			err := retl.Scan(&Ots.Outstanding_quantity, &Retail.Retail_label)
+			err := retl.Scan(&Ots.Outstanding_quantitys, &Retail.Retail_label)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
-			} else {
-				labelRetl = append(labelRetl, Retail.Retail_label)
-				TotalRetl = append(TotalRetl, Ots.Outstanding_quantity)
 			}
+			if prepIncRet < lengthRet {
+				if prepIncRet == 0 || (Retail.Retail_label == prepTempLabelRet) {
+					prepTempTotalRet = prepTempTotalRet + Ots.Outstanding_quantitys
+				} else {
+					labelRetl = append(labelRetl, prepTempLabelRet)
+					TotalRetl = append(TotalRetl, prepTempTotalRet)
+					prepTempTotalRet = 0
+					prepTempTotalRet = prepTempTotalRet + Ots.Outstanding_quantitys
+				}
+
+				if prepIncRet == (lengthRet - 1) {
+					labelRetl = append(labelRetl, prepTempLabelRet)
+					TotalRetl = append(TotalRetl, prepTempTotalRet)
+				}
+
+			}
+			prepTempLabelRet = Retail.Retail_label
+			prepIncRet++
 		}
 		defer wg.Done()
 	}()
@@ -72,21 +96,40 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Pack
 	  **/
 	go func() {
-		pack, err := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), bag.bagcode_name").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id join tb_pairing_order as ord ON bag.bagcode_name = ord.order_label").Where("order_pages = 'OTS'").Group("bagcode_code").Order("order_data ASC").Rows()
-
+		pack, err := idb.DB.Raw("call getDefaultPack()").Find(&OtsArrayPack).Rows()
+		lengthPack := len(OtsArrayRet)
+		prepIncPack := 0
+		prepTempLabelPack := ""
+		prepTempTotalPack := 0
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		for pack.Next() {
-			err := pack.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_package)
+			err := pack.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_package)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
-				labelPack = append(labelPack, Ots.Outstanding_package)
-				TotalPack = append(TotalPack, Ots.Outstanding_quantity)
+				if prepIncPack < lengthPack {
+					if prepIncPack == 0 || (Ots.Outstanding_package == prepTempLabelPack) {
+						prepTempTotalPack = prepTempTotalPack + Ots.Outstanding_quantitys
+					} else {
+						labelPack = append(labelPack, prepTempLabelPack)
+						TotalPack = append(TotalPack, prepTempTotalPack)
+						prepTempTotalPack = 0
+						prepTempTotalPack = prepTempTotalPack + Ots.Outstanding_quantitys
+
+					}
+
+					if prepIncPack == (lengthPack - 1) {
+						labelPack = append(labelPack, prepTempLabelPack)
+						TotalPack = append(TotalPack, prepTempTotalPack)
+					}
+				}
+				prepTempLabelPack = Ots.Outstanding_package
 			}
+			prepIncPack++
 		}
 		defer wg.Done()
 	}()
@@ -94,24 +137,38 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Disp
 	  **/
 	go func() {
-		disp, err := idb.DB.Table("tb_outstandings as ots").Select("outstanding_updt,((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000),  provid_ktgr ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id join tb_pairing_order AS ord on prov.provid_ktgr = ord.order_label").Where("ord.order_pages = 'OTS'").Order("order_data").Group("provid_ktgr").Rows()
+		disp, err := idb.DB.Raw("CALL getDefaultDispatch()").Find(&OtsArray).Rows()
 		if err != nil {
-			fmt.Println("--------------------ERROR DISP---------------------------")
-			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
+		lengthDisp := len(OtsArray)
+		prepTempLabelDisp := ""
+		prepTempTotalDisp := 0
+		prepIncDisp := 0
 		for disp.Next() {
-			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_quantity, &Ots.Outstanding_dispatcher)
+			err := disp.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_dispatcher)
 			if err != nil {
-				fmt.Println("--------------------ERROR DISP---------------------------")
-				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
-				labelTimeUpdate = Ots.Outstanding_update
-				labelDisp = append(labelDisp, Ots.Outstanding_dispatcher)
-				TotalDisp = append(TotalDisp, Ots.Outstanding_quantity)
+				if prepIncDisp < lengthDisp {
+					if prepIncDisp == 0 || (Ots.Outstanding_dispatcher == prepTempLabelDisp) {
+						prepTempTotalDisp = prepTempTotalDisp + Ots.Outstanding_quantitys
+					} else {
+						labelDisp = append(labelDisp, prepTempLabelDisp)
+						TotalDisp = append(TotalDisp, prepTempTotalDisp)
+						prepTempTotalDisp = 0
+						prepTempTotalDisp = prepTempTotalDisp + Ots.Outstanding_quantitys
+					}
+					if prepIncDisp == (lengthDisp - 1) {
+						labelDisp = append(labelDisp, prepTempLabelDisp)
+						TotalDisp = append(TotalDisp, prepTempTotalDisp)
+					}
+				}
+
+				prepTempLabelDisp = Ots.Outstanding_dispatcher
+				prepIncDisp = prepIncDisp + 1
 			}
 		}
 		defer wg.Done()
@@ -120,22 +177,40 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Area
 	  **/
 	go func() {
-		rows, err := idb.DB.Table("tb_outstandings as ots").Select(" ((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), area.tp_area_alias2 ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("area.tp_area_alias2 ").Order("tp_area_code").Rows()
+		rows, err := idb.DB.Raw("CALL getDefaultArea()").Find(&OtsArrayArea).Rows()
+		lengthArea := len(OtsArrayArea)
+		prepTempLabelArea := ""
+		prepTempTotalArea := 0
+		prepIncArea := 0
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
-		var i = 0
 		for rows.Next() {
-			err := rows.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_area)
+			err := rows.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_area)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
-				labelArea = append(labelArea, Ots.Outstanding_area)
-				TotalArea = append(TotalArea, Ots.Outstanding_quantity)
+
+				if prepIncArea < lengthArea {
+					if prepIncArea == 0 || (Ots.Outstanding_area == prepTempLabelArea) {
+						prepTempTotalArea = prepTempTotalArea + Ots.Outstanding_quantitys
+					} else {
+						labelArea = append(labelArea, prepTempLabelArea)
+						TotalArea = append(TotalArea, prepTempTotalArea)
+						prepTempTotalArea = 0
+						prepTempTotalArea = prepTempTotalArea + Ots.Outstanding_quantitys
+					}
+					if prepIncArea == (lengthArea - 1) {
+						labelArea = append(labelArea, prepTempLabelArea)
+						TotalArea = append(TotalArea, prepTempTotalArea)
+					}
+
+				}
 			}
-			i++
+			prepTempLabelArea = Ots.Outstanding_area
+			prepIncArea++
 		}
 		defer wg.Done()
 	}()
@@ -143,49 +218,77 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Late
 	  **/
 	go func() {
-
-		var TotalLateM10, TotalLateL1, TotalLateB610 float64
-		late, err := idb.DB.Table("tb_outstandings as ots").Select("((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000), ots.outstanding_late").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group("ots.outstanding_late").Rows()
+		lateLess0 := 0
+		lateIs0 := 0
+		late1 := 0
+		late2 := 0
+		late3 := 0
+		late4 := 0
+		late5 := 0
+		lateB6T10 := 0
+		lateM10 := 0
+		late, err := idb.DB.Raw("CALL getDefaultLate()").Rows()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 
 		for late.Next() {
-			err := late.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_late)
+			err := late.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_late)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
-				i, errs := strconv.ParseFloat(Ots.Outstanding_quantity, 64)
-				if errs != nil {
-				} else {
-					if Ots.Outstanding_late < 1 {
-						TotalLateL1 = TotalLateL1 + i
-					} else {
-						if Ots.Outstanding_late > 5 && Ots.Outstanding_late < 10 {
-							TotalLateB610 = TotalLateB610 + i
-						} else {
-							if Ots.Outstanding_late > 9 {
-								TotalLateM10 = TotalLateM10 + i
-							} else {
-								labelLate = append(labelLate, Ots.Outstanding_late)
-								TotalLate = append(TotalLate, Ots.Outstanding_quantity)
-							}
-						}
-					}
+				if Ots.Outstanding_late < 0 {
+					lateLess0 = lateLess0 + Ots.Outstanding_quantitys
 				}
-
+				if Ots.Outstanding_late == 0 {
+					lateIs0 = lateIs0 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late == 1 {
+					late1 = late1 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late == 2 {
+					late2 = late2 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late == 3 {
+					late3 = late3 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late == 4 {
+					late4 = late4 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late == 5 {
+					late5 = late5 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late > 5 && Ots.Outstanding_late < 11 {
+					lateB6T10 = lateB6T10 + Ots.Outstanding_quantitys
+				}
+				if Ots.Outstanding_late > 10 {
+					lateM10 = lateM10 + Ots.Outstanding_quantitys
+				}
 			}
-
 		}
 
-		late6Days := strconv.FormatFloat(TotalLateL1, 'f', 2, 64)
-		lateB6T10 := strconv.FormatFloat(TotalLateB610, 'f', 2, 64)
-		lateM10 := strconv.FormatFloat(TotalLateM10, 'f', 2, 64)
-
 		labelLate = append(labelLate, 6)
-		TotalLate = append(TotalLate, late6Days)
+		TotalLate = append(TotalLate, lateLess0)
+
+		labelLate = append(labelLate, 9)
+		TotalLate = append(TotalLate, lateIs0)
+
+		labelLate = append(labelLate, 1)
+		TotalLate = append(TotalLate, late1)
+
+		labelLate = append(labelLate, 2)
+		TotalLate = append(TotalLate, late2)
+
+		labelLate = append(labelLate, 3)
+		TotalLate = append(TotalLate, late3)
+
+		labelLate = append(labelLate, 4)
+		TotalLate = append(TotalLate, late4)
+
+		labelLate = append(labelLate, 5)
+		TotalLate = append(TotalLate, late5)
 
 		labelLate = append(labelLate, 7)
 		TotalLate = append(TotalLate, lateB6T10)
@@ -199,30 +302,42 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	  Trans
 	  **/
 	go func() {
-		trans, err := idb.DB.Table("tb_outstandings as ots").Select("floor(((Sum(ots.outstanding_zak) * bag.bagcode_kg) / 1000)) as total, trs.transporter_name ").Joins("join tb_provids as prov on ots.outstanding_loct = prov.provid_code join tb_bagcodes as bag on ots.outstanding_pack = bag.bagcode_code join tb_transporters as trs on ots.outstanding_trans = trs.transporter_code join tb_destinations as dest on ots.outstanding_dest = dest.destination_code join tb_tp_areas as area on ots.outstanding_area = area.tp_area_code join tb_retails as ret on ots.outstanding_ret = ret.retail_id").Group(" transporter_name").Order("total desc").Rows()
+		trans, err := idb.DB.Raw("call getDefaultTrans()").Find(&OtsArrayTrans).Rows()
+		lengthTrans := len(OtsArrayTrans)
+		prepTempLabelTrans := ""
+		prepTempTotalTrans := 0
+		prepIncTrans := 0
 		if err != nil {
-
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
-		var i = 0
 		for trans.Next() {
-			err := trans.Scan(&Ots.Outstanding_quantity, &Ots.Outstanding_transporter)
+			err := trans.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_transporter)
 			if err != nil {
 
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
-				if i < 10 {
-					labelTransport = append(labelTransport, Ots.Outstanding_transporter)
-					TotalTransport = append(TotalTransport, Ots.Outstanding_quantity)
-				} else {
-					labelTransportOther = append(labelTransportOther, Ots.Outstanding_transporter)
-					TotalTransportOther = append(TotalTransportOther, Ots.Outstanding_quantity)
+				if prepIncTrans < lengthTrans {
+					if prepIncTrans == 0 || (Ots.Outstanding_transporter == prepTempLabelTrans) {
+						prepTempTotalTrans = prepTempTotalTrans + Ots.Outstanding_quantitys
+					} else {
+						labelTransport = append(labelTransport, prepTempLabelTrans)
+						TotalTransport = append(TotalTransport, prepTempTotalTrans)
+						prepTempTotalTrans = 0
+						prepTempTotalTrans = prepTempTotalTrans + Ots.Outstanding_quantitys
+
+					}
+					if prepIncTrans == (lengthTrans - 1) {
+						labelTransport = append(labelTransport, prepTempLabelTrans)
+						TotalTransport = append(TotalTransport, prepTempTotalTrans)
+					}
+
 				}
+				prepTempLabelTrans = Ots.Outstanding_transporter
+				prepIncTrans++
 
 			}
-			i++
 		}
 
 		defer wg.Done()
@@ -230,7 +345,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 
 	wg.Wait()
 	result = gin.H{
-		"lastUpdate": labelTimeUpdate,
+		"lastUpdate": "2019-05-02 19:00:00",
 		"disp": gin.H{
 			"label": labelDisp,
 			"total": TotalDisp,
@@ -250,15 +365,10 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		"late": gin.H{
 			"label": labelLate,
 			"total": TotalLate,
-		}, "transport": gin.H{
-			"top10": gin.H{
-				"label": labelTransport,
-				"total": TotalTransport,
-			},
-			"other": gin.H{
-				"label": labelTransportOther,
-				"total": TotalTransportOther,
-			},
+		},
+		"transport": gin.H{
+			"label": labelTransport,
+			"total": TotalTransport,
 		},
 	}
 
@@ -710,14 +820,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			"label": labelLate,
 			"total": TotalLate,
 		}, "transport": gin.H{
-			"top10": gin.H{
-				"label": labelTransport,
-				"total": TotalTransport,
-			},
-			"other": gin.H{
-				"label": labelTransportOther,
-				"total": TotalTransportOther,
-			},
+			"label": labelTransport,
+			"total": TotalTransport,
 		},
 	}
 

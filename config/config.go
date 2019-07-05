@@ -22,8 +22,9 @@ func DBInit() *gorm.DB {
 
 	db, err := gorm.Open("mysql", dbRoot+":"+dbPass+"("+dbHost+":3306)/"+dbName+"?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
-		panic("failed to connect to database")
+		log.Fatal(err)
 	}
+	defer db.DB().SetMaxIdleConns(100)
 
 	db.AutoMigrate(structs.TbUserLogins{})
 	db.AutoMigrate(structs.TbOutstanding{})
