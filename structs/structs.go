@@ -151,7 +151,9 @@ HERE DECLARATION FOR REQUEST FROM API
 */
 
 type CreateParams struct {
-	Data []string `json:"data"`
+	Data          []string `json:"data"`
+	DataNew       string   `json:"dataNew"`
+	DataNewLength int      `json:"lengthDataNew"`
 }
 
 /**
