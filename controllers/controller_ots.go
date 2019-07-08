@@ -42,11 +42,6 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 
 		labelTransport []string
 		TotalTransport []int
-
-		//labelTransportOther []string
-		//TotalTransportOther []string
-
-		//labelTimeUpdate time.Time
 	)
 
 	var wg sync.WaitGroup
@@ -65,6 +60,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
+		defer retl.Close()
 		for retl.Next() {
 			err := retl.Scan(&Ots.Outstanding_quantitys, &Retail.Retail_label)
 			if err != nil {
@@ -105,6 +101,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
+		defer pack.Close()
 		for pack.Next() {
 			err := pack.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_package)
 			if err != nil {
@@ -146,6 +143,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		prepTempLabelDisp := ""
 		prepTempTotalDisp := 0
 		prepIncDisp := 0
+		defer disp.Close()
 		for disp.Next() {
 			err := disp.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_dispatcher)
 			if err != nil {
@@ -186,6 +184,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
+		defer rows.Close()
 		for rows.Next() {
 			err := rows.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_area)
 			if err != nil {
@@ -232,7 +231,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
-
+		defer late.Close()
 		for late.Next() {
 			err := late.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_late)
 			if err != nil {
@@ -268,7 +267,6 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 				}
 			}
 		}
-
 		labelLate = append(labelLate, 6)
 		TotalLate = append(TotalLate, lateLess0)
 
@@ -295,7 +293,6 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 
 		labelLate = append(labelLate, 8)
 		TotalLate = append(TotalLate, lateM10)
-
 		defer wg.Done()
 	}()
 	/**
@@ -311,6 +308,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
+		defer trans.Close()
+
 		for trans.Next() {
 			err := trans.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_transporter)
 			if err != nil {
@@ -332,18 +331,16 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 						labelTransport = append(labelTransport, prepTempLabelTrans)
 						TotalTransport = append(TotalTransport, prepTempTotalTrans)
 					}
-
 				}
 				prepTempLabelTrans = Ots.Outstanding_transporter
 				prepIncTrans++
-
 			}
 		}
-
 		defer wg.Done()
 	}()
 
 	wg.Wait()
+
 	result = gin.H{
 		"lastUpdate": "2019-05-02 19:00:00",
 		"disp": gin.H{
@@ -826,5 +823,9 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+
+}
+
+func GetIOST(c *gin.Context) {
 
 }

@@ -24,7 +24,6 @@ func DBInit() *gorm.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.DB().SetMaxIdleConns(100)
 
 	db.AutoMigrate(structs.TbUserLogins{})
 	db.AutoMigrate(structs.TbOutstanding{})
