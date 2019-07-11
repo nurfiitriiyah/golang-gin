@@ -49,6 +49,13 @@ type TbOutstanding struct {
 	Outstanding_late        int
 	Outstanding_package     string
 	Outstanding_retail      int
+	Outstanding_loct        string
+	Outstanding_pack        string
+	Outstanding_trans       string
+	Outstanding_dest        string
+	Outstanding_ret         string
+	Outstanding_zak         string
+	Outstanding_updt        time.Time
 }
 
 type TbDelivery struct {

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sync"
+	"time"
 )
 
 /**
@@ -40,6 +41,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 
 		labelTransport []string
 		TotalTransport []int
+
+		lastUpdate time.Time
 	)
 
 	var wg sync.WaitGroup
@@ -55,13 +58,18 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		prepTempLabelRet := ""
 		prepTempTotalRet := 0
 		if err != nil {
+			fmt.Println("************ERR RET******************")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		defer retl.Close()
 		for retl.Next() {
+
 			err := retl.Scan(&Ots.Outstanding_quantitys, &Retail.Retail_label)
 			if err != nil {
+				fmt.Println("************ERR FOR RET******************")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			}
@@ -96,6 +104,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		prepTempLabelPack := ""
 		prepTempTotalPack := 0
 		if err != nil {
+			fmt.Println("************ERR PACK******************")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
@@ -103,6 +113,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		for pack.Next() {
 			err := pack.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_package)
 			if err != nil {
+				fmt.Println("************ERR PACK LOOP******************")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -134,6 +146,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	go func() {
 		disp, err := idb.DB.Raw("CALL getDefaultDispatch()").Find(&OtsArray).Rows()
 		if err != nil {
+			fmt.Println("************ERR DISP******************")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
@@ -143,11 +157,14 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		prepIncDisp := 0
 		defer disp.Close()
 		for disp.Next() {
-			err := disp.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_dispatcher)
+			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_quantitys, &Ots.Outstanding_dispatcher)
 			if err != nil {
+				fmt.Println("************ERR DISP LOOP******************")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
+				lastUpdate = Ots.Outstanding_update
 				if prepIncDisp < lengthDisp {
 					if prepIncDisp == 0 || (Ots.Outstanding_dispatcher == prepTempLabelDisp) {
 						prepTempTotalDisp = prepTempTotalDisp + Ots.Outstanding_quantitys
@@ -179,6 +196,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		prepTempTotalArea := 0
 		prepIncArea := 0
 		if err != nil {
+			fmt.Println("************ERR AREA******************")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
@@ -186,6 +205,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		for rows.Next() {
 			err := rows.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_area)
 			if err != nil {
+				fmt.Println("************ERR LOOP AREA******************")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -226,6 +247,8 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		lateM10 := 0
 		late, err := idb.DB.Raw("CALL getDefaultLate()").Rows()
 		if err != nil {
+			fmt.Println("************ERR LATE******************")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
@@ -303,15 +326,19 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 		prepTempTotalTrans := 0
 		prepIncTrans := 0
 		if err != nil {
+			fmt.Println("************ERR LATE******************")
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			c.Abort()
 		}
 		defer trans.Close()
 
 		for trans.Next() {
+
 			err := trans.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_transporter)
 			if err != nil {
-
+				fmt.Println("************ERR LOOP LATE******************")
+				fmt.Println(err)
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
@@ -340,7 +367,7 @@ func (idb *InDB) GetOTS(c *gin.Context) {
 	wg.Wait()
 
 	result = gin.H{
-		"lastUpdate": "2019-05-02 19:00:00",
+		"lastUpdate": lastUpdate,
 		"disp": gin.H{
 			"label": labelDisp,
 			"total": TotalDisp,
