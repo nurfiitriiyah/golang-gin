@@ -446,6 +446,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 		labelTransport []string
 		TotalTransport []int
+		lastUpdate     time.Time
 	)
 
 	var wg sync.WaitGroup
@@ -549,11 +550,13 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 		prepIncDisp := 0
 		defer disp.Close()
 		for disp.Next() {
-			err := disp.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_dispatcher)
+			err := disp.Scan(&Ots.Outstanding_update, &Ots.Outstanding_quantitys, &Ots.Outstanding_dispatcher)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			} else {
+				lastUpdate = Ots.Outstanding_update
+
 				if prepIncDisp < lengthDisp {
 					if prepIncDisp == 0 || (Ots.Outstanding_dispatcher == prepTempLabelDisp) {
 						prepTempTotalDisp = prepTempTotalDisp + Ots.Outstanding_quantitys
@@ -746,7 +749,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 	wg.Wait()
 
 	result = gin.H{
-		"lastUpdate": "2019-05-02 19:00:00",
+		"lastUpdate": lastUpdate,
 		"disp": gin.H{
 			"label": labelDisp,
 			"total": TotalDisp,
