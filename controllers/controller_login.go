@@ -33,14 +33,16 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 		if user.Username == "" || user.Password == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"status":  http.StatusUnauthorized,
-				"message": "wrong username or password",
+				"message": "Parameter Incomplate",
 			})
 		} else {
-			idb.DB.Where(structs.TbUserLogins{User_uname: user.Username, User_password: user.Password}).First(&UserLogin).Scan(&PrepUserLogin)
+			username := user.Username
+			password := encrypt(user.Password)
+			idb.DB.Where(structs.TbUserLogins{User_uname: username, User_password: password}).First(&UserLogin).Scan(&PrepUserLogin)
 			if len(UserLogin) <= 0 {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"status":  http.StatusUnauthorized,
-					"message": "wrong username or password",
+					"message": "Username or Password is not match",
 				})
 			} else {
 				var LOGIN_EXPIRATION_DURATION = time.Duration(8) * time.Hour

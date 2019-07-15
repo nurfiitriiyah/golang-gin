@@ -38,11 +38,12 @@ func main() {
 
 	router.POST("/login", inDB.CheckLogin)
 
+	router.POST("/user", inDB.CreateUser)
+
 	router.GET("/ots", inDB.GetOTS)
 	router.POST("/detail/ots", inDB.GetDetailOTS)
 
 	router.GET("/ios", inDB.GetIOS)
-	//router.GET("/ios", controllers.GetIOST)
 	router.POST("/detail/ios", inDB.GetDetailIOS)
 
 	router.GET("/event/provid", inDB.GetProvid)

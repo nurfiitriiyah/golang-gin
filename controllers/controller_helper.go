@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -14,7 +17,6 @@ func auth(c *gin.Context) {
 	authorizationHeader := c.Request.Header.Get("Authorization")
 	if authorizationHeader != "" {
 		bearerToken := strings.Split(authorizationHeader, " ")
-		fmt.Println("---------------------------CHECK AUTH--------------------------------")
 		token, err := parseBearerToken(bearerToken[0])
 		if err != nil {
 			fmt.Println(err)
@@ -39,7 +41,24 @@ func parseBearerToken(bearerToken string) (*jwt.Token, error) {
 		return []byte(secret), nil
 	})
 }
+
 func trimFirstRune(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
 	return s[i:]
+}
+
+func encrypt(s string) string {
+	myPassword := s
+	bv := []byte(myPassword)
+	hash := sha256.New()
+	hash.Write(bv)
+	md := hash.Sum(nil)
+	mdStr := hex.EncodeToString(md)
+	return string(mdStr)
+}
+
+func createIds(s string) string {
+	dt := time.Now()
+	createId := s + dt.Format("01022006150405")
+	return string(createId)
 }

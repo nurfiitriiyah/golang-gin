@@ -17,8 +17,8 @@ type Person struct {
 
 type Credential struct {
 	jwt.StandardClaims
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"Username"`
+	Password string `json:"Password"`
 }
 
 /**
@@ -172,6 +172,17 @@ type UserFirebase struct {
 }
 
 /**
+HERE FOR CREATE USER LOGIN
+**/
+type CreateUser struct {
+	UserName     string `json:"post_user_name"`
+	UserUname    string `json:"post_user_uname"`
+	UserPassword string `json:"post_user_pass"`
+	UserRole     int    `json:"post_user_role"`
+	UserPlant    string `json:"post_user_plant"`
+}
+
+/**
 HERE FOR DECLARE STRUCT IN SCAN
 **/
 type TbOutstandingStruct struct {
@@ -186,4 +197,16 @@ type TbOutstandingStruct struct {
 	Outstanding_late        int
 	Outstanding_package     string
 	Outstanding_retail      int
+}
+
+/**
+Validata
+**/
+
+type ValidateUser struct {
+	UserName     string `validate:"required"`
+	UserUname    string `validate:"required"`
+	UserPassword string `validate:"required"`
+	UserRole     int    `validate:"required"`
+	UserPlant    string `validate:"required"`
 }
