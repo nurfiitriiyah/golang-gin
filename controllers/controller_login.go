@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
-	"time"
 )
 
 // to get one data with {id}
@@ -45,10 +44,7 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 					"message": "Username or Password is not match",
 				})
 			} else {
-				var LOGIN_EXPIRATION_DURATION = time.Duration(8) * time.Hour
 				claimMap := jwt.MapClaims{
-					"exp":      time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
-					"iat":      time.Now().Unix(),
 					"id":       PrepUserLogin.User_id,
 					"name":     PrepUserLogin.User_name,
 					"plan":     PrepUserLogin.User_plan,
