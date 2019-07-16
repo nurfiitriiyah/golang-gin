@@ -30,7 +30,7 @@ type TbUserLogins struct {
 	User_uname    string
 	User_password string
 	Role_id       int
-	User_plan     string
+	User_plan     int
 	User_status   int
 	Created_at    time.Time
 	Created_by    string
@@ -153,6 +153,18 @@ type TbBagcodeEvent struct {
 	Bagcode_Names float32
 }
 
+type TbRoles struct {
+	Role_id     int
+	Role_label  string
+	Role_status int
+}
+
+type TbPlan struct {
+	Plan_id     int
+	Plan_label  string
+	Plan_status int
+}
+
 /**
 HERE DECLARATION FOR REQUEST FROM API
 */
@@ -179,7 +191,7 @@ type CreateUser struct {
 	UserUname    string `json:"post_user_uname"`
 	UserPassword string `json:"post_user_pass"`
 	UserRole     int    `json:"post_user_role"`
-	UserPlant    string `json:"post_user_plant"`
+	UserPlant    int    `json:"post_user_plant"`
 }
 
 /**
@@ -208,5 +220,5 @@ type ValidateUser struct {
 	UserUname    string `validate:"required"`
 	UserPassword string `validate:"required"`
 	UserRole     int    `validate:"required"`
-	UserPlant    string `validate:"required"`
+	UserPlant    int    `validate:"required"`
 }

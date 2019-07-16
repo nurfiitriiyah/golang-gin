@@ -30,5 +30,28 @@ func (idb *InDB) GetBagCode(c *gin.Context) {
 		"result": bagCode,
 	}
 	c.JSON(http.StatusOK, result)
+}
 
+func (idb *InDB) GetRole(c *gin.Context) {
+	var (
+		roles  []structs.TbRoles
+		result gin.H
+	)
+	idb.DB.Table("tb_roles").Select("*").Order("role_id").Find(&roles)
+	result = gin.H{
+		"result": roles,
+	}
+	c.JSON(http.StatusOK, result)
+}
+
+func (idb *InDB) GetPlan(c *gin.Context) {
+	var (
+		plans  []structs.TbPlan
+		result gin.H
+	)
+	idb.DB.Table("tb_plans").Select("*").Order("plan_id").Find(&plans)
+	result = gin.H{
+		"result": plans,
+	}
+	c.JSON(http.StatusOK, result)
 }

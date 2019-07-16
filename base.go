@@ -48,6 +48,8 @@ func main() {
 
 	router.GET("/event/provid", inDB.GetProvid)
 	router.GET("/event/bagcode", inDB.GetBagCode)
+	router.GET("/event/roles", inDB.GetRole)
+	router.GET("/event/plant", inDB.GetPlan)
 
 	router.Run(":10005")
 
