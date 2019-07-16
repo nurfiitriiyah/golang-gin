@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"../structs"
 	"fmt"
-	"gin/structs"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/go-playground/validator.v8"
