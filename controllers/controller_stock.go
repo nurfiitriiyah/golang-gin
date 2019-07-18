@@ -3,6 +3,7 @@ package controllers
 import (
 	//"fmt"
 	"../structs"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -102,7 +103,9 @@ func (idb *InDB) GetDetailIOS(c *gin.Context) {
 		findFirstProvid = "%%"
 	}
 
-	queryStock, err := idb.DB.Table("tb_iostock").Select("iostok_date as stock_date,sum(iostok_in) as stock_in,sum(iostok_out) as stock_out,sum(iostok_stok) as stock_total,sum(iostok_gnt_in) as stock_change,sum(iostok_que) as stock_que,sum(iostok_otw) as stock_otw,sum(iostok_osdo) as stock_osdo").Group("iostok_date").Where("iostok_date BETWEEN ? AND ? AND iostok_type like ? AND iostok_packg like ? AND iostok_dispatch like ?", nums[0], nums[1], firstCharBagCode, secondCharBagCode, findFirstProvid).Rows()
+	fmt.Println(firstCharBagCode)
+	fmt.Println(secondCharBagCode)
+	queryStock, err := idb.DB.Table("tb_iostock").Select("iostok_date as stock_date,sum(iostok_in) as stock_in,sum(iostok_out) as stock_out,sum(iostok_stok) as stock_total,sum(iostok_gnt_in) as stock_change,sum(iostok_que) as stock_que,sum(iostok_otw) as stock_otw,sum(iostok_osdo) as stock_osdo").Where("iostok_date BETWEEN ? AND ? AND iostok_type like ? AND iostok_packg like ? AND iostok_dispatch like ?", nums[0], nums[1], secondCharBagCode, firstCharBagCode, findFirstProvid).Group("iostok_date").Rows()
 	defer queryStock.Close()
 
 	if err != nil {

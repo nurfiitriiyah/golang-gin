@@ -12,7 +12,7 @@ func (idb *InDB) GetProvid(c *gin.Context) {
 		provid []structs.TbProvidEvent
 		result gin.H
 	)
-	idb.DB.Table("tb_provids").Select("provid_code,provid_name").Order("provid_name asc").Find(&provid)
+	idb.DB.Table("tb_provids").Select("provid_code,provid_name").Where("provid_ktgr = 'warehouse'").Order("provid_name asc").Find(&provid)
 	result = gin.H{
 		"result": provid,
 	}
@@ -24,8 +24,11 @@ func (idb *InDB) GetBagCode(c *gin.Context) {
 	var (
 		bagCode []structs.TbBagcodeEvent
 		result  gin.H
+		params  structs.TbProvidEvent
 	)
-	idb.DB.Table("tb_bagcodes").Select("bagcode_code,bagcode_name").Order("bagcode_name").Find(&bagCode)
+	c.Bind(&params)
+	parameter := params.Provid_Code
+	idb.DB.Table("tb_iostock as stock").Select("bagcode_code,bagcode_name").Joins("join tb_provids as provid on provid.provid_code = stock.iostok_dispatch join tb_bagcodes as bags on bags.bagcode_code = CONCAT(stock.iostok_packg,stock.iostok_type)").Where("provid.provid_code = ?", parameter).Group("bagcode_code").Find(&bagCode)
 	result = gin.H{
 		"result": bagCode,
 	}
