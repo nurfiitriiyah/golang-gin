@@ -536,6 +536,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 						if prepIncPack == 0 || (Ots.Outstanding_package == prepTempLabelPack) {
 							prepTempTotalPack = prepTempTotalPack + Ots.Outstanding_quantitys
+
 						} else {
 							labelPack = append(labelPack, prepTempLabelPack)
 							TotalPack = append(TotalPack, prepTempTotalPack)
@@ -545,7 +546,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 						}
 
 						if prepIncPack == (lengthPack - 1) {
-							labelPack = append(labelPack, prepTempLabelPack)
+							labelPack = append(labelPack, Ots.Outstanding_package)
 							TotalPack = append(TotalPack, prepTempTotalPack)
 						}
 					}
