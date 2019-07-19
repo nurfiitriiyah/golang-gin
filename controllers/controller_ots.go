@@ -498,7 +498,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 					}
 
 					if prepIncRet == (lengthRet - 1) {
-						labelRetl = append(labelRetl, prepTempLabelRet)
+						labelRetl = append(labelRetl, Retail.Retail_label)
 						TotalRetl = append(TotalRetl, prepTempTotalRet)
 					}
 
@@ -592,7 +592,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 							prepTempTotalDisp = prepTempTotalDisp + Ots.Outstanding_quantitys
 						}
 						if prepIncDisp == (lengthDisp - 1) {
-							labelDisp = append(labelDisp, prepTempLabelDisp)
+							labelDisp = append(labelDisp, Ots.Outstanding_dispatcher)
 							TotalDisp = append(TotalDisp, prepTempTotalDisp)
 						}
 					}
@@ -639,7 +639,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 							prepTempTotalArea = prepTempTotalArea + Ots.Outstanding_quantitys
 						}
 						if prepIncArea == (lengthArea - 1) {
-							labelArea = append(labelArea, prepTempLabelArea)
+							labelArea = append(labelArea, Ots.Outstanding_area)
 							TotalArea = append(TotalArea, prepTempTotalArea)
 						}
 
@@ -769,7 +769,7 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 
 						}
 						if prepIncTrans == (lengthTrans - 1) {
-							labelTransport = append(labelTransport, prepTempLabelTrans)
+							labelTransport = append(labelTransport, Ots.Outstanding_transporter)
 							TotalTransport = append(TotalTransport, prepTempTotalTrans)
 						}
 					}

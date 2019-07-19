@@ -25,7 +25,7 @@ func (idb *InDB) CreateUser(c *gin.Context) {
 
 		errs := c.BindJSON(&createParams)
 		if errs != nil {
-			c.JSON(http.StatusUnauthorized, errs.Error())
+			c.JSON(http.StatusBadRequest, errs.Error())
 			c.Abort()
 		} else {
 			config := &validator.Config{TagName: "validate"}
