@@ -47,6 +47,7 @@ func (idb *InDB) CheckLogin(c *gin.Context) {
 				claimMap := jwt.MapClaims{
 					"id":       PrepUserLogin.User_id,
 					"name":     PrepUserLogin.User_name,
+					"role":     PrepUserLogin.Role_id,
 					"plan":     PrepUserLogin.User_plan,
 					"username": PrepUserLogin.User_uname,
 				}

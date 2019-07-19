@@ -518,6 +518,9 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			prepTempLabelPack := ""
 			prepTempTotalPack := 0
 			if err != nil {
+				fmt.Println("--------------------ERROR PACK--------------------")
+				fmt.Println(err)
+
 				c.JSON(http.StatusInternalServerError, err)
 				c.Abort()
 			}
@@ -525,6 +528,8 @@ func (idb *InDB) GetDetailOTS(c *gin.Context) {
 			for pack.Next() {
 				err := pack.Scan(&Ots.Outstanding_quantitys, &Ots.Outstanding_package)
 				if err != nil {
+					fmt.Println("--------------------ERROR FOR PACK--------------------")
+					fmt.Println(err)
 					c.JSON(http.StatusInternalServerError, err)
 					c.Abort()
 				} else {
